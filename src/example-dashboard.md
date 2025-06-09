@@ -41,6 +41,24 @@ const phTourismLong = FileAttachment("./data/phTourism.csv").csv({typed: false})
 ```
 
 ```js
+const phTourismWide = aq.from(phTourismLong)
+  .groupby("year", "id", "region", "province", "muniCity")
+  .pivot("traveler", "count")
+  .derive({ total: d => d.domestic + d.foreign + d.overseas })
+  .orderby("year", "muniCity", "province", "id")
+  .objects()
+
+const phTourismWideLong = aq.from(phTourismWide)
+  .groupby("year", "id", "region", "province", "muniCity")
+  .fold(["domestic", "foreign", "overseas", "total"])
+  .rename({
+    key: "traveler",
+    value: "count"
+  })
+  .objects()
+```
+
+```js
 const regions = [...new Set(phTourismLong.map(d => d.region))]
 ```
 
@@ -48,11 +66,9 @@ const regions = [...new Set(phTourismLong.map(d => d.region))]
 const phTourismFiltered = phTourismLong
   .filter(d => 
     checkboxYears.includes(String(d.year)) &&
-    // checkboxesTravelers.includes(d.traveler) &&
     (selectRegion === "All regions" ? true : selectRegion === d.region)
     )
 const phTourismPropsMap = new Map(phTourismFiltered.map((d => [String(d.id), d])))
-console.log("phTourismPropsMap: ", phTourismPropsMap)
 ```
 
 ```js
@@ -62,7 +78,8 @@ const philippines = FileAttachment("./data/philippines.json").json({ typed: true
 
 ```js
 const phNation = topojson.feature(philippines, philippines.objects.land)
-const phProvinces = new Map(topojson.feature(philippines, philippines.objects.provinces).features.map(d => [d.properties["CC_1"], d]))
+const phProvinces = topojson.feature(philippines, philippines.objects.provinces)
+const phProvincesMap = new Map(phProvinces.features.map(d => [d.properties["CC_1"], d]))
 const phProvincesMesh = topojson.mesh(philippines, philippines.objects.provinces, (a, b) => a!== b)
 
 const { type, features } = topojson.feature(philippines, philippines.objects.municipalities)
@@ -75,29 +92,68 @@ const phMuniFeatures = features.map(f => {
       geometry
     }
 })
-console.log("phMuniFeatures: ", phMuniFeatures)
 ```
 
 ```js
-function bubblePlot(selTraveler, { color }){
-  const dataPropsMap = new Map(phTourismFiltered
-    .filter(d => d.traveler === selTraveler)
-    .map((d => [d.id, d])))
+function bubblePlot(selTraveler, { fill, fillOpacity, tip }){
+  const dataPropsMap = new Map(phTourismWideLong
+      .filter(d => 
+        checkboxYears.includes(String(d.year)) &&
+        (selectRegion === "All regions" ? true : selectRegion === d.region)
+      )
+      .filter(d => selTraveler !== "total" ? d.traveler === selTraveler : true)
+      .map((d => [d.id, d])))
 
   return [ Plot.dot(phMuniFeatures, Plot.centroid({
     r: d => dataPropsMap.get(d.id)?.count,
-    fill: color,
-    fillOpacity: 0.65,
+    fill,
+    fillOpacity,
     stroke: "#ffffff",
     strokeOpacity: 0.65,
     strokeWidth: 0.75,
     geometry: d => d.geometry,
     channels: {
         "town/city": ({ id }) => `${dataPropsMap.get(id)?.muniCity}, ${dataPropsMap.get(id)?.province}`,
-        tourist: ({ id }) => dataPropsMap.get(id)?.count,
+        count: ({ id }) => dataPropsMap.get(id)?.count,
     },
-    tip: true
+    tip
   }))]
+}
+
+function bubblePlotTotal(selTraveler, { fill, fillOpacity, tip }){
+  const dataPropsMap = new Map(phTourismWide
+      .filter(d => 
+        checkboxYears.includes(String(d.year)) &&
+        (selectRegion === "All regions" ? true : selectRegion === d.region)
+      )
+      .map((d => [d.id, d])))
+
+  return [ 
+    Plot.dot(phMuniFeatures, Plot.centroid({
+      r: d => dataPropsMap.get(d.id)?.total,
+      fill,
+      fillOpacity,
+      stroke: "#ffffff",
+      strokeOpacity: 0.65,
+      strokeWidth: 0.75,
+      geometry: d => d.geometry,
+      channels: {
+          "town/city": ({ id }) => `${dataPropsMap.get(id)?.muniCity}, ${dataPropsMap.get(id)?.province}`,
+          total: ({ id }) => dataPropsMap.get(id)?.total,
+          domestic: ({ id }) => dataPropsMap.get(id)?.domestic,
+          foreign: ({ id }) => dataPropsMap.get(id)?.foreign,
+          overseas: ({ id }) => dataPropsMap.get(id)?.overseas,
+          r: null
+      },
+      tip
+    })),
+    Plot.tip(phMuniFeatures, Plot.pointer({
+      x: "weight",
+      y: "height",
+      filter: (d) => d.info,
+      title: (d) => [d.name, d.info].join("\n\n")
+    }))
+  ]
 }
 ```
 
@@ -137,22 +193,10 @@ function mapPh({width, height}) {
       marks: [
           Plot.geo(phNation, { fill: "#333333" }),
           Plot.geo(phProvincesMesh, { stroke: "#777777" }),
-          // Plot.spike(phMuniFeatures, Plot.centroid({
-          //     stroke: "orange",
-          //     length: d => phTourismPropsMap.get(d.id)?.count,
-          //     opacity: 0.65, // d => opacityScale(phTourismPropsMap.get(d.id)?.count),
-          //     channels: {
-          //         "town/city": ({ id }) => {
-          //           return `${phTourismPropsMap.get(id)?.muniCity}, ${phTourismPropsMap.get(id)?.province}`
-          //         },
-          //         tourist: ({ id }) => phTourismPropsMap.get(id)?.count,
-          //     },
-          //     tip: true
-          // })),
-          // legendSpike([2e5, 4e5, 6e5, 8e5, 10e5], {stroke: "orange"}),
-          bubblePlot("domestic", { color: "steelblue"}),
-          bubblePlot("foreign", { color: "orange"}),
-          bubblePlot("overseqas", { color: "lightred"}),
+          bubblePlot("domestic", { fill: "steelblue", fillOpacity: 0.65, tip: false }),
+          bubblePlot("foreign", { fill: "orange", fillOpacity: 0.65, tip: false }),
+          // bubblePlot("overseas", { fill: "lightred", tip: false, fillOpacity: 0.65 }),
+          bubblePlotTotal("total", { fill: "pink", tip: true, fillOpacity: 0 }),
       ]
   })
 }
@@ -160,7 +204,8 @@ function mapPh({width, height}) {
 
 ```js
 // Inputs and checkboxes
-const checkboxYears = view(Inputs.checkbox(["2019", "2021", "2023"], {label: "Select year/s", value: ["2019", "2021", "2023"]}))
+const checkboxYearsForm = Inputs.checkbox(["2019", "2021", "2023"], {label: "Select year/s", value: ["2019", "2021", "2023"]})
+const checkboxYears = view(checkboxYearsForm)
 // const checkboxesTravelers = view(Inputs.checkbox(["foreign", "overseas", "domestic"], {label: "Select travelers", value: ["foreign"]}))
 const selectRegion = view(Inputs.select(["All regions", ...regions], {label: "Select region"}))
 ```
@@ -233,16 +278,16 @@ function topDestBars({ width, height }){
 // Faceted trends
 const topDestTrends = aq.from(topDestinationsWide)
   .select("muniCity", "province")
-  .join_left(aq.from(phTourismFiltered)
+  .join_left(aq.from(phTourismLong)
              .groupby("year", "muniCity", "province")
              .pivot("traveler", "count"))
   .derive({ 
     provMuniCity: aq.escape(d => `${d.muniCity}, ${d.province}`),
-    sum: d => d.domestic + d.foreign + d.overseas
+    total: d => d.domestic + d.foreign + d.overseas
   })
   .groupby("provMuniCity")
-  .fold(["domestic", "foreign", "overseas"]).rename({ key: "traveler", value: "count" })
-  .orderby("year", aq.desc("sum"))
+  .fold(["domestic", "foreign", "overseas", "total"]).rename({ key: "traveler", value: "count" })
+  // .orderby("year", aq.desc("count"))
   .objects()
 
 function facetedTrends({ width, height }){
@@ -298,30 +343,72 @@ function facetedTrends({ width, height }){
 
 ```js
 // Percent change
-const topDestChange = aq.from(topDestinationsWide)
-  .select("muniCity", "province")
-  .join_left(aq.from(phTourismFiltered)
-             .groupby("year", "muniCity", "province")
-             .pivot("traveler", "count"))
+// const topDestChange = aq.from(topDestinationsWide)
+//   .select("muniCity", "province")
+//   .join_left(aq.from(phTourismLong)
+//              .groupby("year", "muniCity", "province")
+//              .pivot("traveler", "count"))
+//   .derive({ 
+//     provMuniCity: aq.escape(d => `${d.muniCity}, ${d.province}`),
+//     total: d => d.domestic + d.foreign + d.overseas
+//   })
+//   .groupby("provMuniCity")
+//   .fold(["domestic", "foreign", "overseas", "total"]).rename({ key: "traveler", value: "count" })
+//   // Pivot for year, to get perc change
+//   .groupby("province", "muniCity", "provMuniCity", "traveler")
+//   .pivot("year", "count")
+//   .ungroup()
+//   .rename({ "2019": "year2019", "2021": "year2021", "2023": "year2023" })
+//   // Derive a percent change between 2019 and 2023
+//   .derive({ percChange: aq.escape(d => {
+//     if(d.year2019 === 0) { return 0 }
+//     return +((d.year2023 - d.year2019)/Math.abs(d.year2019 + 0.0000000001) * 100).toFixed(2)
+//     }) })
+//   .orderby(aq.desc("percChange"))
+//   .filter(aq.escape(d => !isNaN(d.percChange) && isFinite(d.percChange)))
+//   .objects()
+
+const topDestinationsChange = aq.from(phTourismLong)
+  .filter(aq.escape(d => selectRegion === "All regions" ? true : 
+                    d.region === selectRegion ))
+  .groupby("year", "muniCity", "province")
+  .pivot("traveler", "count")
   .derive({ 
     provMuniCity: aq.escape(d => `${d.muniCity}, ${d.province}`),
-    sum: d => d.domestic + d.foreign + d.overseas
+    total: d => d.domestic + d.foreign + d.overseas
   })
   .groupby("provMuniCity")
-  .fold(["domestic", "foreign", "overseas"]).rename({ key: "traveler", value: "count" })
+  .fold(["domestic", "foreign", "overseas", "total"]).rename({ key: "traveler", value: "count" })
   // Pivot for year, to get perc change
   .groupby("province", "muniCity", "provMuniCity", "traveler")
   .pivot("year", "count")
   .ungroup()
   .rename({ "2019": "year2019", "2021": "year2021", "2023": "year2023" })
   // Derive a percent change between 2019 and 2023
-  .derive({ percChange: aq.escape(d => +((d.year2023 - d.year2019)/Math.abs(d.year2019 + 0.0000000001) * 100).toFixed(2)) })
+  .derive({ percChange: aq.escape(d => {
+    if(d.year2019 === 0) { return 0 }
+    return +((d.year2023 - d.year2019)/Math.abs(d.year2019 + 0.0000000001) * 100).toFixed(2)
+    }) })
   .orderby(aq.desc("percChange"))
-  // .filter(aq.escape(d => !isNaN(d.percChange) && isFinite(d.percChange)))
+  .filter(aq.escape(d => !isNaN(d.percChange) && isFinite(d.percChange)))
+  .groupby("provMuniCity", "traveler")
   .objects()
 
-function sparklineDest(traveler, provMuniCity) {
-  const data = topDestTrends
+const topDestChangeLong = aq.from(topDestinationsChange)
+  .groupby("province", "muniCity", "provMuniCity")
+  .fold(["year2019", "year2021", "year2023"], "count")
+  .rename({ key: "year", value: "count" })
+  .derive({ year: aq.escape(d => d.year.replaceAll("year", "")) })
+  .objects()
+
+const rangeTop = 10
+
+const topDestGains = aq.from(topDestinationsChange)
+  .orderby(aq.desc("percChange"))
+  .objects()
+
+function sparklineDest(topDestChangeLong, traveler, provMuniCity) {
+  const data = topDestChangeLong
     .filter(d => d.traveler === traveler && d.provMuniCity === provMuniCity)
   
   return Plot.plot({
@@ -343,10 +430,13 @@ function sparklineDest(traveler, provMuniCity) {
     ]
   })
 }
+
+const radiosTravelerForm = Inputs.radio(["total", "domestic", "foreign"], {label: "Select traveler", value: "total"})
+const radiosTraveler = view(radiosTravelerForm)
 ```
 
 ```js
-const searchPhTourism = Inputs.search(phTourismLong);
+const searchPhTourism = Inputs.search(phTourismWide);
 const searchPhTourismValue = Generators.input(searchPhTourism);
 ```
 
@@ -354,26 +444,30 @@ const searchPhTourismValue = Generators.input(searchPhTourism);
   <div class="card grid-colspan-1">
     <h2>Summary</h2>
     <div class="card">
-      <h3>Total Tourists in ${selectRegion}</h3>
-      ${subTotal} Travelers
-    </div>
-    <div class="card">
-      <h3>Breakdown of Total Tourists in ${selectRegion}</h3>
+      <h3>Popular Destinations by Total Number of Tourists</h3>
+      <br/>
+      <div>
+        ${checkboxYearsForm}
+      </div>
+      <br/>
+      <div>
+        <h4>Total Tourists in ${selectRegion}</h4>
+        ${subTotal} Travelers
+      </div>
+      <br/><br/>
+      <h4>Breakdown of Total Tourists in ${selectRegion}</h4>
       ${resize((width) => totalBars({width}))}
-    </div>
-    <div class="card">
-      <h3>Top Destinations in ${selectRegion}</h3>
+      <br />
+      <h4>Top Destinations in ${selectRegion}</h4>
       ${resize((width) => topDestBars({width}))}
       <br />
-      ${view(Inputs.table(topDestinationsWide.map((d, i) => ({ ...d, rank: i + 1})), {
-        columns: ["muniCity", "province", "foreign", "domestic", "overseas", "total", "rank"],
-        header: { rank: "Rank", muniCity: "Municipality/City", province: "Province", 
-          foreign: "Foreign", domestic: "Domestic", overseas: "Overseas", total: "Total" }
-        }
-      ))}
     </div>
     <div class="card">
-      <table style="width:100%">
+      <h2>Trending Destinations</h2>
+      ${view(radiosTravelerForm)}
+      <br/>
+      <h3>${radiosTraveler} tourists from ${selectRegion}</h3>
+      <table style="width:100%;">
         <thead>
           <tr>
             <th>Destination</th>
@@ -385,20 +479,19 @@ const searchPhTourismValue = Generators.input(searchPhTourism);
           </tr>
         </thead>
         <tbody>
-          ${topDestChange.filter(d => d.traveler === "domestic")
+          ${topDestinationsChange
+            .filter(d => d.traveler === radiosTraveler)
+            .slice(0, rangeTop)
             .map(({ provMuniCity, traveler, year2019, year2021, year2023, percChange }) => htl.html`<tr>
               <td>${provMuniCity}</td>
               <td>${year2019}</td>
               <td>${year2021}</td>
               <td>${year2023}</td>
-              <td>${sparklineDest(traveler, provMuniCity)}</td>
+              <td>${sparklineDest(topDestChangeLong, traveler, provMuniCity)}</td>
               <td>${percChange > 0 ? `+${percChange}` : percChange }%</td>
             </tr>`)}
         </tbody>
       </table>
-    </div>
-    <div class="card">
-      ${resize((width) => facetedTrends({width}))}
     </div>
   </div>  
   <div class="card grid-colspan-1">
@@ -408,11 +501,15 @@ const searchPhTourismValue = Generators.input(searchPhTourism);
   </div>
 </div>
 <div class="card">
+  <h2>All Destinations</h2>
+  <br/>
   ${searchPhTourism}
+  <br/>
   ${Inputs.table(
     searchPhTourismValue, 
-    {columns: ["year", "id", "region", "province", "muniCity", "traveler", "count"], 
-    header: {year: "Year", id: "ID", region: "Region", muniCity: "Municipality/City", count: "Count"}})}
+    {columns: ["muniCity", "province", "region", "year", "id",  "total", "domestic", "foreign", "overseas"], 
+    header: {year: "Year", id: "ID", region: "Region", province: "Province", muniCity: "Destination", 
+      total: "Total", domestic: "Domestic", foreign: "Foreign", overseas: "Overseas"}})}
 </div>
 
 <!-- Data: Jonathan C. McDowell, [General Catalog of Artificial Space Objects](https://planet4589.org/space/gcat) -->

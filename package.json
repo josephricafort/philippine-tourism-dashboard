@@ -13,6 +13,7 @@
     "arquero": "^8.0.3",
     "d3-dsv": "^3.0.1",
     "d3-time-format": "^4.1.0",
+    "htl": "^0.3.1",
     "topojson-client": "^3.1.0"
   },
   "devDependencies": {
