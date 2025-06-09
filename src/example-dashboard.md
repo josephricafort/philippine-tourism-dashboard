@@ -4,8 +4,6 @@ title: Example dashboard
 toc: false
 ---
 
-# Philippine Regional Tourism Arrivals 🏖️
-
 ```js
 import { op } from "npm:arquero"
 ```
@@ -113,14 +111,14 @@ function bubblePlot(selTraveler, { fill, fillOpacity, tip }){
     strokeWidth: 0.75,
     geometry: d => d.geometry,
     channels: {
-        "town/city": ({ id }) => `${dataPropsMap.get(id)?.muniCity}, ${dataPropsMap.get(id)?.province}`,
-        count: ({ id }) => dataPropsMap.get(id)?.count,
+        Destination: ({ id }) => `${dataPropsMap.get(id)?.muniCity}, ${dataPropsMap.get(id)?.province}`,
+        Count: ({ id }) => dataPropsMap.get(id)?.count,
     },
     tip
   }))]
 }
 
-function bubblePlotTotal(selTraveler, { fill, fillOpacity, tip }){
+function bubblePlotTooltip(selTraveler, { fill, fillOpacity, tip }){
   const dataPropsMap = new Map(phTourismWide
       .filter(d => 
         checkboxYears.includes(String(d.year)) &&
@@ -138,11 +136,11 @@ function bubblePlotTotal(selTraveler, { fill, fillOpacity, tip }){
       strokeWidth: 0.75,
       geometry: d => d.geometry,
       channels: {
-          "town/city": ({ id }) => `${dataPropsMap.get(id)?.muniCity}, ${dataPropsMap.get(id)?.province}`,
-          total: ({ id }) => dataPropsMap.get(id)?.total,
-          domestic: ({ id }) => dataPropsMap.get(id)?.domestic,
-          foreign: ({ id }) => dataPropsMap.get(id)?.foreign,
-          overseas: ({ id }) => dataPropsMap.get(id)?.overseas,
+          Destination: ({ id }) => `${dataPropsMap.get(id)?.muniCity}, ${dataPropsMap.get(id)?.province}`,
+          Total: ({ id }) => dataPropsMap.get(id)?.total,
+          Domestic: ({ id }) => dataPropsMap.get(id)?.domestic,
+          Foreign: ({ id }) => dataPropsMap.get(id)?.foreign,
+          Overseas: ({ id }) => dataPropsMap.get(id)?.overseas,
           r: null
       },
       tip
@@ -195,8 +193,7 @@ function mapPh({width, height}) {
           Plot.geo(phProvincesMesh, { stroke: "#777777" }),
           bubblePlot("domestic", { fill: "steelblue", fillOpacity: 0.65, tip: false }),
           bubblePlot("foreign", { fill: "orange", fillOpacity: 0.65, tip: false }),
-          // bubblePlot("overseas", { fill: "lightred", tip: false, fillOpacity: 0.65 }),
-          bubblePlotTotal("total", { fill: "pink", tip: true, fillOpacity: 0 }),
+          bubblePlotTooltip("total", { fill: "pink", tip: true, fillOpacity: 0 }),
       ]
   })
 }
@@ -207,7 +204,8 @@ function mapPh({width, height}) {
 const checkboxYearsForm = Inputs.checkbox(["2019", "2021", "2023"], {label: "Select year/s", value: ["2019", "2021", "2023"]})
 const checkboxYears = view(checkboxYearsForm)
 // const checkboxesTravelers = view(Inputs.checkbox(["foreign", "overseas", "domestic"], {label: "Select travelers", value: ["foreign"]}))
-const selectRegion = view(Inputs.select(["All regions", ...regions], {label: "Select region"}))
+const selectRegionForm = Inputs.select(["All regions", ...regions], {label: "Select region"})
+const selectRegion = view(selectRegionForm)
 ```
 
 ```js
@@ -216,7 +214,9 @@ const subTotal = phTourismFiltered.reduce((sum, d) => sum + +d.count, 0)
 function travelerBars({width, height}){
   return Plot.plot({
     marks: [
-      Plot.barX(phTourismFiltered, Plot.groupY({x: "sum"}, {x: "count", y: "traveler", sort: {y: "x", reverse: true }, fill: "lightblue"})),
+      Plot.barX(phTourismFiltered, Plot.groupY(
+        {x: "sum"}, 
+        {x: "count", y: "traveler", sort: {y: "x", reverse: true }, fill: "lightblue"})),
       Plot.ruleX([0])
     ],
     marginLeft: 100,
@@ -264,12 +264,17 @@ function topDestBars({ width, height }){
         Plot.groupY(
           { x: "sum" },
           { x: "count",
-          y: "muniCity",
-          fill: "traveler",
-          sort: { y: "x", reverse: true } }
+            fx: "traveler",
+            y: "muniCity",
+            fill: "traveler",
+            sort: { y: "x", reverse: true } 
+          }
         )
-      )
+      ),
+      Plot.frame({ fill: "#ffffff", fillOpacity: 0.05, strokeOpacity: .25 })
     ],
+    fx: { padding: 0.2 },
+    x: { grid: true }
   })
 }
 ```
@@ -439,10 +444,16 @@ const radiosTraveler = view(radiosTravelerForm)
 const searchPhTourism = Inputs.search(phTourismWide);
 const searchPhTourismValue = Generators.input(searchPhTourism);
 ```
-
+<div class="grid grid-cols-1">
+  <div class="card grid-rowspan-1">
+    <h1>🇵🇭 Philippine Regional Tourism Arrivals - Data Explorer 🏖️</h1>
+    <p>Explore the most popular and trending travel destinations in the Philippines using data from the Department of Tourism.</p>
+    ${selectRegionForm}
+  </div>
+</div>
 <div class="grid grid-cols-2">
   <div class="card grid-colspan-1">
-    <h2>Summary</h2>
+    <h2>${selectRegion} Summary</h2>
     <div class="card">
       <h3>Popular Destinations by Total Number of Tourists</h3>
       <br/>
@@ -462,40 +473,44 @@ const searchPhTourismValue = Generators.input(searchPhTourism);
       ${resize((width) => topDestBars({width}))}
       <br />
     </div>
-    <div class="card">
+    <div class="card trending-destinations">
       <h2>Trending Destinations</h2>
       ${view(radiosTravelerForm)}
       <br/>
       <h3>${radiosTraveler} tourists from ${selectRegion}</h3>
-      <table style="width:100%;">
-        <thead>
-          <tr>
-            <th>Destination</th>
-            <th>2019</th>
-            <th>2021</th>
-            <th>2023</th>
-            <th>Trend</th>
-            <th>Change</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${topDestinationsChange
-            .filter(d => d.traveler === radiosTraveler)
-            .slice(0, rangeTop)
-            .map(({ provMuniCity, traveler, year2019, year2021, year2023, percChange }) => htl.html`<tr>
-              <td>${provMuniCity}</td>
-              <td>${year2019}</td>
-              <td>${year2021}</td>
-              <td>${year2023}</td>
-              <td>${sparklineDest(topDestChangeLong, traveler, provMuniCity)}</td>
-              <td>${percChange > 0 ? `+${percChange}` : percChange }%</td>
-            </tr>`)}
-        </tbody>
-      </table>
+      <div class="table-container">
+        ${resize((width) => htl.html`
+          <table style="max-width: ${width}px;">
+            <thead>
+              <tr>
+                <th>Destination</th>
+                <th>2019</th>
+                <th>2021</th>
+                <th>2023</th>
+                <th>Trend</th>
+                <th>Change</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${topDestinationsChange
+                .filter(d => d.traveler === radiosTraveler)
+                .slice(0, rangeTop)
+                .map(({ provMuniCity, traveler, year2019, year2021, year2023, percChange }) => htl.html`<tr>
+                  <td>${provMuniCity}</td>
+                  <td>${year2019}</td>
+                  <td>${year2021}</td>
+                  <td>${year2023}</td>
+                  <td>${sparklineDest(topDestChangeLong, traveler, provMuniCity)}</td>
+                  <td>${percChange > 0 ? `+${percChange}` : percChange }%</td>
+                </tr>`)}
+            </tbody>
+          </table>
+        `)}
+      </div>
     </div>
   </div>  
   <div class="card grid-colspan-1">
-    <h2>Locations</h2>
+    <h2>Destinations Map</h2>
     <p>Hover over the circles in the map to see the tourist counts.</p>
     ${resize((width) => mapPh({width}))}
   </div>
@@ -512,4 +527,16 @@ const searchPhTourismValue = Generators.input(searchPhTourism);
       total: "Total", domestic: "Domestic", foreign: "Foreign", overseas: "Overseas"}})}
 </div>
 
+Want to have something similar? Contact me at josephricafort@gmail.com or see my works at [josephricafort.com](https://josephricafort.com)
+
 <!-- Data: Jonathan C. McDowell, [General Catalog of Artificial Space Objects](https://planet4589.org/space/gcat) -->
+
+<style>
+  h1, p {
+    max-width: 100%;
+  }
+
+  .table-container {
+    width: 100%;
+  }
+</style>
