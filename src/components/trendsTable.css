@@ -1,0 +1,26 @@
+.table-container {
+    width: 100%;
+
+    table {
+      thead {
+        tr {
+          th.tourist-count {
+            text-align: right;
+          }
+          th.tourist-perc-change {
+            text-align: right;
+          }
+        }
+      }
+      tbody {
+        tr {
+          td.tourist-count {
+            text-align: right;
+          }
+          td.tourist-perc-change {
+            text-align: right;
+          }
+        }
+      }
+    }
+  }
