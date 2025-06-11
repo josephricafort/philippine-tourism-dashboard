@@ -24,7 +24,7 @@ function trendsTable(data, {resize, selTraveler, rangeTop }) {
           <tbody>
             ${topDestinationsChange
               .filter(d => d.traveler === selTraveler)
-              .slice(0, rangeTop)
+              // .slice(0, rangeTop)
               .map(({ provMuniCity, traveler, year2019, year2021, year2023, percChange }) => html`<tr>
                 <td class="municity">${provMuniCity}</td>
                 <td class="tourist-count">${formatNumber(year2019)}</td>
@@ -60,8 +60,8 @@ function sparklineDest(data, traveler, provMuniCity) {
     margin: 1,
     marks: [
       Plot.areaY(dataFiltered, { x: d => new Date(d.year), y: "count", fillOpacity: 0.1 }),
-      Plot.lineY(dataFiltered, { x: d => new Date(d.year), y: "count", tip: true })
-    ]
+      Plot.lineY(dataFiltered, { x: d => new Date(d.year), y: "count", tip: false })
+    ],
   })
 }
 

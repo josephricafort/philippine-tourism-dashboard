@@ -40,9 +40,7 @@ function bubblePlotTooltip(data, { fill, fillOpacity, tip }){
 
     return [ 
         Plot.dot(phMuniFeatures, Plot.centroid({
-            r: {
-                value: d => dataPropsMap.get(d.id)?.total,
-            },
+            r: { value: d => dataPropsMap.get(d.id)?.total },
             fill,
             fillOpacity,
             stroke: "#ffffff",

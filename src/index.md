@@ -136,6 +136,7 @@ function mapPh({width, height}) {
           Plot.geo(phProvincesMesh, { stroke: "#777777" }),
           bubblePlot(bbPlotData, "domestic", { fill: "steelblue", fillOpacity: 0.65, tip: false }),
           bubblePlot(bbPlotData, "foreign", { fill: "orange", fillOpacity: 0.65, tip: false }),
+          bubblePlot(bbPlotData, "overseaas", { fill: "red", fillOpacity: 0.65, tip: false }),
           bubblePlotTooltip(bbPlotTooltipData, { fill: "pink", tip: true, fillOpacity: 0 }),
       ]
   })
@@ -147,10 +148,10 @@ function mapPh({width, height}) {
 const cbValues = ["2019", "2021", "2023"]
 const checkboxYearsForm = Inputs.checkbox(cbValues, {label: "Select year/s", value: cbValues })
 const checkboxYears = view(checkboxYearsForm)
-// Disable unticking checkbox when only one remaining variable is available to 
-// prevent unselecting them at the current instance
-const cbDisabled = checkboxYears.length == 1 ? checkboxYears[0] : ""
-const checkboxYearsFormDisabled = Inputs.checkbox(cbValues, {label: "Select year/s", value: cbValues, disabled: cbDisabled })
+// // Disable unticking checkbox when only one remaining variable is available to 
+// // prevent unselecting them at the current instance
+// const cbDisabled = checkboxYears.length == 1 ? checkboxYears[0] : ""
+// const checkboxYearsFormDisabled = Inputs.checkbox(cbValues, {label: "Select year/s", value: cbValues, disabled: cbDisabled })
 
 
 // const checkboxesTravelers = view(Inputs.checkbox(["foreign", "overseas", "domestic"], {label: "Select travelers", value: ["foreign"]}))
@@ -310,24 +311,38 @@ Want to have something similar? Contact me at josephricafort@gmail.com or see my
 
   .table-container {
     width: 100%;
+    height: 100%;
+    max-height: 250px;
+    overflow-y: auto;
 
     table {
+      position: relative;
+
       thead {
+        position: sticky;
+        top: 0;
+        background: #222222;
+        z-index: 5 !important;
+
         tr {
-          th.tourist-count {
-            text-align: right;
-          }
-          th.tourist-perc-change {
+          th.tourist-count,
+          th.tourist-perc-change,
+          th.sparkline {
             text-align: right;
           }
         }
       }
       tbody {
-        tr {
-          td.tourist-count {
-            text-align: right;
+        td.sparkline {
+          svg {
+            z-index: 0 !important;
           }
-          td.tourist-perc-change {
+        }
+
+        tr {
+          td.tourist-count,
+          td.tourist-perc-change,
+          td.sparkline {
             text-align: right;
           }
         }
