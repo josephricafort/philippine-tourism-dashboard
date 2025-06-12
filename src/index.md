@@ -99,8 +99,27 @@ const regCenterZoom = FileAttachment("./data/regional-center-zoom.csv").csv({ ty
 
 ```js
 // Philippine Map
-import { bubblePlot, bubblePlotTooltip } from "./components/bubblePlot.js"
+import { bubblePlot, bubblePlotTooltip, radiusLegend } from "./components/bubblePlot.js"
 import { legendSpike } from "./data/utils.js"
+const phRegionsFile = FileAttachment("./data/region.json").json({ typed: true })
+```
+
+```js
+const phRegions = topojson.feature(phRegionsFile, phRegionsFile.objects.region)
+const phRegionsCorrected = [
+      ...aq.from(phTourismWide)
+        .select("id", "region")
+        .derive({ id: aq.escape(d => d.id.substring(0, 2)) })
+        .dedupe()
+        // Correction for NIR: Remove and added manually
+        .filter(d => d.region !== "Negros Island Region (NIR)" && 
+                d.region !== "Bangsamoro Autonomous Region In Muslim Mindanao (BARMM)")
+        .objects(),
+      { id: "18", region: "Negros Island Region (NIR)" },
+      { id: "19", region: "Bangsamoro Autonomous Region In Muslim Mindanao (BARMM)" }
+    ]
+const phRegionsMap = new Map(phRegionsCorrected.map(d => [d.id, d.region]))
+
 const regCenterZoomMap = new Map(regCenterZoom.map(d => [d.region, d]))
 const phCenter = [122, 12.6]
 const phZoom = 7.7
@@ -113,32 +132,51 @@ if(selectRegion === "All regions") {
   circle = d3.geoCircle().center([centerLong, centerLat]).radius(zoom).precision(2)()
 }
 
-const bbPlotData = { phTourismWideLong, phMuniFeatures, checkboxYears, selectRegion }
-const bbPlotTooltipData = { phTourismWide, phMuniFeatures, checkboxYears, selectRegion }
+const dataBbPlot = phTourismWideLong
+        .filter(d => 
+          checkboxYears.includes(String(d.year)) &&
+          (selectRegion === "All regions" ? true : selectRegion === d.region))
+const dataBbPlotTooltip = phTourismWide
+        .filter(d => 
+          checkboxYears.includes(String(d.year)) &&
+          (selectRegion === "All regions" ? true : selectRegion === d.region))
+
+const bbPlotData = { dataBbPlot, phMuniFeatures, checkboxYears, selectRegion }
+const bbPlotTooltipData = { dataBbPlotTooltip, phMuniFeatures, checkboxYears, selectRegion }
 
 function mapPh({width, height}) {
   const opacityScale = d3.scaleLinear()
     .domain(d3.extent(d3.map(phTourismFiltered, d => d.count)))
     .range([0.3, 1])
 
-    return Plot.plot({
-      projection: {
-          type: "mercator",
-          rotate: [0, 0],
-          domain: circle,
-          inset: 0
-      },
-      width,
-      height,
-      length: { range: [0, 150] },
-      marks: [
-          Plot.geo(phNation, { fill: "#333333" }),
-          Plot.geo(phProvincesMesh, { stroke: "#777777" }),
-          bubblePlot(bbPlotData, "domestic", { fill: "steelblue", fillOpacity: 0.65, tip: false }),
-          bubblePlot(bbPlotData, "foreign", { fill: "orange", fillOpacity: 0.65, tip: false }),
-          bubblePlot(bbPlotData, "overseaas", { fill: "red", fillOpacity: 0.65, tip: false }),
-          bubblePlotTooltip(bbPlotTooltipData, { fill: "pink", tip: true, fillOpacity: 0 }),
-      ]
+  return Plot.plot({
+    projection: {
+        type: "mercator",
+        rotate: [0, 0],
+        domain: circle,
+        inset: 0
+    },
+    width,
+    height,
+    length: { range: [0, 150] },
+    marks: [
+        // Plot.geo(phNation, { fill: "#333333", className: "nation" }),
+        Plot.geo(phRegions.features, {
+          fill: d => phRegionsMap.get(d.properties["CC_REG"]) === selectRegion ? "#555555" : "#333333",
+          strokeWidth: 2,
+          className: "region"
+        }),
+        Plot.geo(phProvincesMesh, { 
+          stroke: "#222222",
+          strokeWidth: 1,
+          className: "province-mesh"
+        }),
+        bubblePlot(bbPlotData, "domestic", { fill: "steelblue", fillOpacity: 0.65, tip: false }),
+        bubblePlot(bbPlotData, "foreign", { fill: "orange", fillOpacity: 0.65, tip: false }),
+        bubblePlot(bbPlotData, "overseaas", { fill: "red", fillOpacity: 0.65, tip: false }),
+        bubblePlotTooltip(bbPlotTooltipData, { fill: "pink", tip: true, fillOpacity: 0 }),
+        radiusLegend([0.25, 1, 2], { r: (d) => d * 1e6, title: (d) => `${d}M` })
+    ]
   })
 }
 ```
