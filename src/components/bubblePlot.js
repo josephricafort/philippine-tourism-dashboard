@@ -61,7 +61,7 @@ function radiusLegend (data, options) {
     ...options,
     frameAnchor: "top-left",
     strokeWidth: 0.8,
-    dx: 40,
+    dx: 60,
     dy: 90,
     render: (i, s, v, d, c, next) => {
       const g = next(i, s, v, d, c);

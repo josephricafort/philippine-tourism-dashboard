@@ -175,7 +175,20 @@ function mapPh({width, height}) {
         bubblePlot(bbPlotData, "foreign", { fill: "orange", fillOpacity: 0.65, tip: false }),
         bubblePlot(bbPlotData, "overseaas", { fill: "red", fillOpacity: 0.65, tip: false }),
         bubblePlotTooltip(bbPlotTooltipData, { fill: "pink", tip: true, fillOpacity: 0 }),
-        radiusLegend([0.25, 1, 2], { r: (d) => d * 1e6, title: (d) => `${d}M` })
+        radiusLegend([0.25, 1, 2], { r: (d) => d * 1e6, title: (d) => `${d}M` }),
+        Plot.text(phProvinces.features, Plot.centroid({
+          text: d => d.properties["NAME_1"],
+          fill: "#cccccc",
+          stroke: "#333333",
+          strokeWidth: 1,
+          fontSize: 12,
+          className: "province-name",
+          filter: d => {
+            const id = d.properties["CC_1"]
+            const regId = id.length === 3 ? `0${id.substring(0, 1)}` : id.substring(0, 2)
+            return phRegionsMap.get(regId) === selectRegion
+          }
+        })),
     ]
   })
 }
