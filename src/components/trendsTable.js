@@ -2,10 +2,17 @@ import * as Plot from "npm:@observablehq/plot";
 import  { html } from "npm:htl";
 import { formatNumber } from "./utils.js";
 
-// import "./trendsTable.css"
-
 function trendsTable(data, {resize, selTraveler, rangeTop }) {
   const { topDestinationsChange, topDestChangeLong } = data;
+  function percChangeStyle(perc) {
+    if (perc > 0) {
+      return "color: #3ca952; font-weight: bold;";
+    } else if (perc === 0) {
+      return "color: grey;";
+    } else {
+      return "color: #e45756; font-weight: bold;";
+    }
+  }
 
   return html`
     <div class="table-container">
@@ -31,7 +38,9 @@ function trendsTable(data, {resize, selTraveler, rangeTop }) {
                 <td class="tourist-count">${formatNumber(year2021)}</td>
                 <td class="tourist-count">${formatNumber(year2023)}</td>
                 <td class="sparkline">${sparklineDest({ topDestChangeLong }, traveler, provMuniCity)}</td>
-                <td class="tourist-perc-change">${percChange > 0 ? `+${formatNumber(percChange)}` : percChange }%</td>
+                <td class="tourist-perc-change" style="${percChangeStyle(percChange)}">
+                    ${percChange > 0 ? `+${formatNumber(percChange)}` : percChange }%
+                </td>
               </tr>`)}
           </tbody>
         </table>
@@ -59,8 +68,22 @@ function sparklineDest(data, traveler, provMuniCity) {
     height: 15,
     margin: 1,
     marks: [
-      Plot.areaY(dataFiltered, { x: d => new Date(d.year), y: "count", fillOpacity: 0.1 }),
-      Plot.lineY(dataFiltered, { x: d => new Date(d.year), y: "count", tip: false })
+      Plot.areaY(dataFiltered, { 
+        x: d => new Date(d.year), 
+        y: "count", 
+        fill: d => 
+          d.percChange > 0 && "#3ca952" || 
+          d.percChange === 0 && "grey" || "#e45756",
+        fillOpacity: 0.25
+      }),
+      Plot.lineY(dataFiltered, { 
+        x: d => new Date(d.year), 
+        y: "count", 
+        stroke: d => 
+          d.percChange > 0 && "#3ca952" || 
+          d.percChange === 0 && "grey" || "#e45756",
+        tip: false
+      })
     ],
   })
 }

@@ -1,5 +1,5 @@
 ---
-theme: dashboard
+theme: [ ocean-floor, wide ]
 title: Philippine Tourist Destinations - Data Explorer
 toc: false
 ---
@@ -281,32 +281,28 @@ const topDestGains = aq.from(topDestinationsChange)
 const searchPhTourism = Inputs.search(phTourismWide);
 const searchPhTourismValue = Generators.input(searchPhTourism);
 
-import { sparklineDest, trendsTable } from "./components/trendsTable.js"
+import { trendsTable } from "./components/trendsTable.js"
 
 const trendsTableData = { topDestinationsChange, topDestChangeLong }
 const rangeTop = 10
 ```
 
 <div class="grid grid-cols-1">
-  <div class="card grid-rowspan-1">
+  <div class="grid-rowspan-1">
     <h1>🇵🇭 Where Did All Tourists Go? 🏖️</h1>
     <p>Explore the most popular and trending travel destinations in the Philippines. Source: Department of Tourism.</p>
     ${selectRegionForm}
   </div>
 </div>
 <div class="grid grid-cols-2">
-  <div class="card grid-colspan-1">
-    <h2>Key Insights</h2>
-    <div class="card">
+  <div>
+    <div class="card" style="margin-top: 0;">
+      <h4>Key Insights</h4>
       <div class="grid grid-cols-2">
-        <div>
-          <h3>Popular Destinations in ${checkboxYears.join(", ")}</h3>
-        </div>
         <div>
           ${checkboxYearsForm}
         </div>
       </div>
-      <hr />
       <div class="grid grid-cols-3">
         <div class="grid-colspan-1">
           <h4>Total and Breakdown of Tourists in ${selectRegion}</h4>
@@ -322,15 +318,14 @@ const rangeTop = 10
       </div>
     </div>
     <div class="card trending-destinations">
-      <h2>Trending Destinations between 2019 and 2023</h2>
-      ${view(radiosTravelerForm)}
+      <h4>Trending Destinations between 2019 and 2023 from ${selectRegion}</h4>
       <br/>
-      <h3>${radiosTraveler} tourists from ${selectRegion}</h3>
+      ${view(radiosTravelerForm)}
       ${trendsTable(trendsTableData, { resize, selTraveler: radiosTraveler, rangeTop })}
     </div>
   </div>  
   <div class="card grid-colspan-1">
-    <h2>Destinations Map</h2>
+    <h4>Distribution of tourists across ${selectRegion}</h4>
     <p>Hover over the circles in the map to see the tourist counts.</p>
     ${resize((width) => mapPh({width}))}
   </div>
@@ -356,10 +351,6 @@ Want to have something similar? Contact me at josephricafort@gmail.com or see my
     max-width: 100%;
   }
 
-  h1 { font-size: 2rem }
-  h2 { font-size: 1.75rem }
-  h3 { font-size: 1.5rem }
-
   .table-container {
     width: 100%;
     height: 100%;
@@ -372,7 +363,7 @@ Want to have something similar? Contact me at josephricafort@gmail.com or see my
       thead {
         position: sticky;
         top: 0;
-        background: #222222;
+        background: --theme-foreground;
         z-index: 5 !important;
 
         tr {
