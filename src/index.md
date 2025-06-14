@@ -43,9 +43,10 @@ const phTourismLong = FileAttachment("./data/phTourism.csv").csv({typed: false})
 const phTourismWide = aq.from(phTourismLong)
   .groupby("year", "id", "region", "province", "muniCity")
   .pivot("traveler", "count")
-  .derive({ total: d => d.domestic + d.foreign + d.overseas })
+  .derive({ total: d => d.overseas ? d.domestic + d.foreign + d.overseas : d.domestic + d.foreign })
   .orderby("year", "muniCity", "province", "id")
   .objects()
+console.log("phTourismWide: ", phTourismWide)
 
 const phTourismWideLong = aq.from(phTourismWide)
   .groupby("year", "id", "region", "province", "muniCity")
@@ -173,7 +174,7 @@ function mapPh({width, height}) {
         }),
         bubblePlot(bbPlotData, "domestic", { fill: "steelblue", fillOpacity: 0.65, tip: false }),
         bubblePlot(bbPlotData, "foreign", { fill: "orange", fillOpacity: 0.65, tip: false }),
-        bubblePlot(bbPlotData, "overseaas", { fill: "red", fillOpacity: 0.65, tip: false }),
+        // bubblePlot(bbPlotData, "overseaas", { fill: "red", fillOpacity: 0.65, tip: false }),
         bubblePlotTooltip(bbPlotTooltipData, { fill: "pink", tip: true, fillOpacity: 0 }),
         radiusLegend([0.25, 1, 2], { r: (d) => d * 1e6, title: (d) => `${d}M` }),
         Plot.text(phProvinces.features, Plot.centroid({
@@ -212,7 +213,16 @@ const selectRegion = view(selectRegionForm)
 
 ```js
 // Bar charts
-const subTotal = phTourismFiltered.reduce((sum, d) => sum + +d.count, 0)
+const subTotal = phTourismFiltered
+  .filter(d => {
+    // Filter out provinces but not NCR cities
+    if(!isNaN(d.count)){
+      if(d.province != d.muniCity) return true
+      else if(d.region == "National Capital Region (NCR)") return true
+      else false
+    } 
+  })
+  .reduce((sum, d) => sum + +d.count, 0)
 
 import { totalBars, topDestBars } from "./components/barCharts.js"
 
@@ -256,13 +266,22 @@ const topDestinationsChange = aq.from(phTourismLong)
   .rename({ "2019": "year2019", "2021": "year2021", "2023": "year2023" })
   // Derive a percent change between 2019 and 2023
   .derive({ percChange: aq.escape(d => {
+    const initCount = !isNaN(d.year2019) ? d.year2019 : d.year2021
     if(d.year2019 === 0) { return 0 }
-    return +((d.year2023 - d.year2019)/Math.abs(d.year2019 + 0.0000000001) * 100).toFixed(2)
+    return +((d.year2023 - initCount)/Math.abs(initCount + 0.0000000001) * 100).toFixed(2)
     }) })
   .orderby(aq.desc("percChange"))
-  .filter(aq.escape(d => !isNaN(d.percChange) && isFinite(d.percChange)))
+  // .filter(aq.escape(d => !isNaN(d.percChange) && isFinite(d.percChange)))
+  // .filter(aq.escape(d => isFinite(d.percChange)))
+  // If at least 2023 data is available while 2019 is NaN, change 2019 data to 0
+  .derive({
+    year2019: aq.escape(d => !isNaN(d.year2021) && isNaN(d.year2019) ? 0 : d.year2019)
+  })
+  .filter(aq.escape(d => !isNaN(d.year2019) && !isNaN(d.year2023) ))
   .groupby("provMuniCity", "traveler")
   .objects()
+
+console.log("topDestinationsChange, ", topDestinationsChange)
 
 const topDestChangeLong = aq.from(topDestinationsChange)
   .groupby("province", "muniCity", "provMuniCity")
@@ -386,6 +405,10 @@ Want to have something similar? Contact me at josephricafort@gmail.com or see my
           td.tourist-perc-change,
           td.sparkline {
             text-align: right;
+          }
+
+          td.perc-change {
+            
           }
         }
       }

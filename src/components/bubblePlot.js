@@ -2,8 +2,8 @@ import * as Plot from "npm:@observablehq/plot";
 import { formatNumber } from "./utils.js"
 import * as d3 from "npm:d3";
 
-function bubblePlot(data, selTraveler, { fill, fillOpacity, tip }){
-    const { dataBbPlot, phMuniFeatures, checkboxYears, selectRegion } = data;
+function bubblePlot(data, selTraveler, { fill, fillOpacity }){
+    const { dataBbPlot, phMuniFeatures } = data;
 
     const dataPropsMap = new Map(dataBbPlot
         .filter(d => selTraveler !== "total" ? d.traveler === selTraveler : true)
@@ -21,12 +21,12 @@ function bubblePlot(data, selTraveler, { fill, fillOpacity, tip }){
         //     Destination: ({ id }) => `${dataPropsMap.get(id)?.muniCity}, ${dataPropsMap.get(id)?.province}`,
         //     Count: ({ id }) => formatNumber(dataPropsMap.get(id)?.count),
         // },
-        tip
+        tip: false
     }))]
 }
 
 function bubblePlotTooltip(data, { fill, fillOpacity, tip }){
-    const { dataBbPlotTooltip, phMuniFeatures, checkboxYears, selectRegion } = data;
+    const { dataBbPlotTooltip, phMuniFeatures } = data;
 
     const dataPropsMap = new Map(dataBbPlotTooltip.map((d => [d.id, d])))
 
@@ -43,7 +43,7 @@ function bubblePlotTooltip(data, { fill, fillOpacity, tip }){
                 Total: ({ id }) => formatNumber(dataPropsMap.get(id)?.total),
                 Domestic: ({ id }) => formatNumber(dataPropsMap.get(id)?.domestic),
                 Foreign: ({ id }) => formatNumber(dataPropsMap.get(id)?.foreign),
-                Overseas: ({ id }) => formatNumber(dataPropsMap.get(id)?.overseas),
+                Overseas: ({ id }) => !isNaN(formatNumber(dataPropsMap.get(id)?.overseas)) ? formatNumber(dataPropsMap.get(id)?.overseas) : "-",
             },
             tip
         })),

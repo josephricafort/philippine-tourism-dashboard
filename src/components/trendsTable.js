@@ -34,8 +34,8 @@ function trendsTable(data, {resize, selTraveler, rangeTop }) {
               // .slice(0, rangeTop)
               .map(({ provMuniCity, traveler, year2019, year2021, year2023, percChange }) => html`<tr>
                 <td class="municity">${provMuniCity}</td>
-                <td class="tourist-count">${formatNumber(year2019)}</td>
-                <td class="tourist-count">${formatNumber(year2021)}</td>
+                <td class="tourist-count">${year2019 > 0 ? formatNumber(year2019) : "-"}</td>
+                <td class="tourist-count">${!isNaN(year2021) ? formatNumber(year2021) : "-"}</td>
                 <td class="tourist-count">${formatNumber(year2023)}</td>
                 <td class="sparkline">${sparklineDest({ topDestChangeLong }, traveler, provMuniCity)}</td>
                 <td class="tourist-perc-change" style="${percChangeStyle(percChange)}">
@@ -74,15 +74,17 @@ function sparklineDest(data, traveler, provMuniCity) {
         fill: d => 
           d.percChange > 0 && "#3ca952" || 
           d.percChange === 0 && "grey" || "#e45756",
-        fillOpacity: 0.25
+        fillOpacity: 0.25,
+        filter: d => d.count > 0 // Filter out 0s and NaNs
       }),
       Plot.lineY(dataFiltered, { 
-        x: d => new Date(d.year), 
+        x: d => new Date(d.year),
         y: "count", 
         stroke: d => 
           d.percChange > 0 && "#3ca952" || 
           d.percChange === 0 && "grey" || "#e45756",
-        tip: false
+        tip: false,
+        filter: d => d.count > 0 // Filter out 0s and NaNs
       })
     ],
   })
