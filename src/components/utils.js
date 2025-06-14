@@ -2,7 +2,12 @@ import * as d3 from "npm:d3";
 
 // Create a formatter function
 function formatNumber(n){ 
-    return d3.format(".2s")(n); 
+    const digit = Math.abs(n) > 10 ? 2 : 1
+    return d3.format(`.${digit}s`)(n)
+}
+
+function zeroIfNaN (num) {
+  return !isNaN(num) ? num : 0
 }
 
 function rangeInput(options = {}) {
@@ -197,4 +202,4 @@ function rangeInput(options = {}) {
   return dom;
 }
 
-export { formatNumber, rangeInput }
+export { formatNumber, zeroIfNaN, rangeInput }

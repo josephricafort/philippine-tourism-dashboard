@@ -6,7 +6,7 @@ toc: false
 
 ```js
 import { op } from "npm:arquero"
-import { formatNumber } from "./components/utils.js"
+import { formatNumber, zeroIfNaN } from "./components/utils.js"
 ```
 
 ```js
@@ -43,7 +43,7 @@ const phTourismLong = FileAttachment("./data/phTourism.csv").csv({typed: false})
 const phTourismWide = aq.from(phTourismLong)
   .groupby("year", "id", "region", "province", "muniCity")
   .pivot("traveler", "count")
-  .derive({ total: d => d.overseas ? d.domestic + d.foreign + d.overseas : d.domestic + d.foreign })
+  .derive({ total: aq.escape(d => zeroIfNaN(d.domestic) + zeroIfNaN(d.foreign) + zeroIfNaN(d.overseas)) })
   .orderby("year", "muniCity", "province", "id")
   .objects()
 console.log("phTourismWide: ", phTourismWide)
@@ -239,7 +239,7 @@ const topDestinations = aq.from(phTourismFiltered)
 const topDestinationsWide = aq.from(topDestinations)
   .groupby("muniCity", "province")
   .pivot("traveler", "count")
-  .derive({ total: d => d.domestic + d.foreign + d.overseas })
+  .derive({ total: aq.escape(d => zeroIfNaN(d.domestic) + zeroIfNaN(d.foreign) + zeroIfNaN(d.overseas)) })
   .objects()
 ```
 
@@ -255,7 +255,7 @@ const topDestinationsChange = aq.from(phTourismLong)
   .pivot("traveler", "count")
   .derive({ 
     provMuniCity: aq.escape(d => `${d.muniCity}, ${d.province}`),
-    total: d => d.domestic + d.foreign + d.overseas
+    total: aq.escape(d => zeroIfNaN(d.domestic) + zeroIfNaN(d.foreign) + zeroIfNaN(d.overseas))
   })
   .groupby("provMuniCity")
   .fold(["domestic", "foreign", "overseas", "total"]).rename({ key: "traveler", value: "count" })
