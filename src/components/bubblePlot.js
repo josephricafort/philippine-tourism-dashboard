@@ -1,5 +1,5 @@
 import * as Plot from "npm:@observablehq/plot";
-import { formatNumber } from "./utils.js"
+import { formatNumber, dashIfNaN } from "./utils.js"
 import * as d3 from "npm:d3";
 
 function bubblePlot(data, selTraveler, { fill, fillOpacity }){
@@ -17,10 +17,6 @@ function bubblePlot(data, selTraveler, { fill, fillOpacity }){
         strokeOpacity: 0.65,
         strokeWidth: 0.75,
         geometry: d => d.geometry,
-        // channels: {
-        //     Destination: ({ id }) => `${dataPropsMap.get(id)?.muniCity}, ${dataPropsMap.get(id)?.province}`,
-        //     Count: ({ id }) => formatNumber(dataPropsMap.get(id)?.count),
-        // },
         tip: false
     }))]
 }
@@ -32,18 +28,17 @@ function bubblePlotTooltip(data, { fill, fillOpacity, tip }){
 
     return [ 
         Plot.dot(phMuniFeatures, Plot.centroid({
-            r: { value: d => dataPropsMap.get(d.id)?.total },
+            r: d => dataPropsMap.get(d.id)?.total,
             fill,
             fillOpacity,
             stroke: "transparent",
-            strokeOpacity: 0.65,
             geometry: d => d.geometry,
             channels: {
                 Destination: ({ id }) => `${dataPropsMap.get(id)?.muniCity}, ${dataPropsMap.get(id)?.province}`,
                 Total: ({ id }) => formatNumber(dataPropsMap.get(id)?.total),
                 Domestic: ({ id }) => formatNumber(dataPropsMap.get(id)?.domestic),
                 Foreign: ({ id }) => formatNumber(dataPropsMap.get(id)?.foreign),
-                Overseas: ({ id }) => !isNaN(formatNumber(dataPropsMap.get(id)?.overseas)) ? formatNumber(dataPropsMap.get(id)?.overseas) : "-",
+                Overseas: ({ id }) => dashIfNaN(formatNumber(dataPropsMap.get(id)?.overseas)),
             },
             tip
         })),

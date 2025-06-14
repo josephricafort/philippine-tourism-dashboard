@@ -6,9 +6,9 @@ function formatNumber(n){
     return d3.format(`.${digit}s`)(n)
 }
 
-function zeroIfNaN (num) {
-  return !isNaN(num) ? num : 0
-}
+function zeroIfNaN (num) { return !isNaN(num) ? num : 0 }
+
+function dashIfNaN (num) { return !isNaN(num) ? num : "-" }
 
 function rangeInput(options = {}) {
   const {
@@ -202,4 +202,4 @@ function rangeInput(options = {}) {
   return dom;
 }
 
-export { formatNumber, zeroIfNaN, rangeInput }
+export { formatNumber, zeroIfNaN, dashIfNaN, rangeInput }

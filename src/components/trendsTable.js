@@ -1,6 +1,6 @@
 import * as Plot from "npm:@observablehq/plot";
 import  { html } from "npm:htl";
-import { formatNumber } from "./utils.js";
+import { formatNumber, dashIfNaN } from "./utils.js";
 
 function trendsTable(data, {resize, selTraveler, rangeTop }) {
   const { topDestinationsChange, topDestChangeLong } = data;

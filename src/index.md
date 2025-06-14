@@ -43,10 +43,11 @@ const phTourismLong = FileAttachment("./data/phTourism.csv").csv({typed: false})
 const phTourismWide = aq.from(phTourismLong)
   .groupby("year", "id", "region", "province", "muniCity")
   .pivot("traveler", "count")
-  .derive({ total: aq.escape(d => zeroIfNaN(d.domestic) + zeroIfNaN(d.foreign) + zeroIfNaN(d.overseas)) })
+  .derive({ total: aq.escape(d => d.overseas ? d.domestic + d.foreign + d.overseas : d.domestic + d.foreign ) })
   .orderby("year", "muniCity", "province", "id")
   .objects()
-console.log("phTourismWide: ", phTourismWide)
+console.log("phTourismWide Davao Region: ", phTourismWide.filter(d => d.region == "Region XI (Davao Region)"))
+console.log(undefined + 1)
 
 const phTourismWideLong = aq.from(phTourismWide)
   .groupby("year", "id", "region", "province", "muniCity")
@@ -150,6 +151,10 @@ function mapPh({width, height}) {
     .domain(d3.extent(d3.map(phTourismFiltered, d => d.count)))
     .range([0.3, 1])
 
+  const [maxCount, minCount] = d3.extent(d3.map(dataBbPlot, d => d.count))
+  const meanCount = d3.mean(d3.map(dataBbPlot, d => d.count))
+  const EXP = 1e6
+
   return Plot.plot({
     projection: {
         type: "mercator",
@@ -172,11 +177,13 @@ function mapPh({width, height}) {
           strokeWidth: 1,
           className: "province-mesh"
         }),
+        // Bubble plots
         bubblePlot(bbPlotData, "domestic", { fill: "steelblue", fillOpacity: 0.65, tip: false }),
         bubblePlot(bbPlotData, "foreign", { fill: "orange", fillOpacity: 0.65, tip: false }),
-        // bubblePlot(bbPlotData, "overseaas", { fill: "red", fillOpacity: 0.65, tip: false }),
         bubblePlotTooltip(bbPlotTooltipData, { fill: "pink", tip: true, fillOpacity: 0 }),
-        radiusLegend([0.25, 1, 2], { r: (d) => d * 1e6, title: (d) => `${d}M` }),
+        radiusLegend([0.25, 1, 2], { r: (d) => d * 1e6, title: (d) => `${d}M`}), // [0.25, 1, 2]
+        // radiusLegend([minCount / EXP, meanCount / EXP, maxCount / EXP], { r: (d) => d * EXP, title: (d) => `${formatNumber(d)}` }), // [0.25, 1, 2]
+        // Location text labels
         Plot.text(phProvinces.features, Plot.centroid({
           text: d => d.properties["NAME_1"],
           fill: "#cccccc",
