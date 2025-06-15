@@ -80,11 +80,6 @@ const philippines = FileAttachment("./data/philippines.json").json({ typed: true
 // Data for the map
 const phNation = topojson.feature(philippines, philippines.objects.land)
 const phProvinces = topojson.feature(philippines, philippines.objects.provinces)
-// const nirProvinces = [
-//   { province: "Negros Occidental", newId: "1845" },
-//   { province: "Negros Oriental", newId: "1846" },
-//   { province: "Siquijor", newId: "1861" }
-// ]
 const phProvFeatures = aq.from(phProvinces.features)
     // Make correspondence codes into 9-digit standard
     // First four digits and 5 zeros
