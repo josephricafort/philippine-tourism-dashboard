@@ -1,11 +1,23 @@
 import * as Plot from "npm:@observablehq/plot";
+import { getDestination } from "./utils.js"
+import { NCR } from "./constants.js";
 
 function totalBars(data, { width, height }){
     const { phTourismFiltered } = data;
 
+    // Filter out provincial data and only keep municipal data
+    // Keep only those that are in NCR
+    const dataFiltered = phTourismFiltered.filter(d => {
+      if(d.province === d.muniCity) {
+        if (d.region === NCR) { return true }
+        else return false
+      }
+      else return true
+    });
+
   return Plot.plot({
     marks: [
-      Plot.barX(phTourismFiltered, Plot.groupY(
+      Plot.barX(dataFiltered, Plot.groupY(
         {x: "sum"}, 
         {x: "count", y: "", fill: "traveler", sort: {y: "x", reverse: true }, tickFormat: ".2s" })),
         Plot.axisX({
@@ -31,7 +43,7 @@ function topDestBars(data, { width, height }){
         Plot.groupY(
             { x: "sum" },
             { x: "count",
-            y: d => `${d.muniCity}, ${d.province}`,
+            y: d => getDestination({region: d.region, province: d.province, muniCity: d.muniCity}),
             fill: "traveler",
             sort: { y: "x", reverse: true },
             tickFormat: ".0s"

@@ -7,6 +7,7 @@ toc: false
 ```js
 import { op } from "npm:arquero"
 import { formatNumber, zeroIfNaN } from "./components/utils.js"
+import { NCR } from "./components/constants.js"
 ```
 
 ```js
@@ -161,7 +162,7 @@ const dataBbPlotTooltip = phTourismWide
 
 const bbPlotData = { data: dataBbPlot, features: phMuniFeatures, checkboxYears, selectRegion }
 const bbPlotProvData = { data: dataBbPlot, features: phProvFeatures, checkboxYears, selectRegion }
-const bbPlotTooltipData = { data: dataBbPlotTooltip, features: phMuniFeatures, checkboxYears, selectRegion }
+const bbPlotTooltipData = { data: dataBbPlotTooltip, features: { phProvFeatures, phMuniFeatures }, checkboxYears, selectRegion }
 
 function mapPh({width, height}) {
   const opacityScale = d3.scaleLinear()
@@ -195,12 +196,13 @@ function mapPh({width, height}) {
           className: "province-mesh"
         }),
         // Bubble plots
+        // bubblePlot(bbPlotData, { fill: "steelblue", fillOpacity: 0.65, tip: false }),
         bubblePlot(bbPlotData, "domestic", { fill: "steelblue", fillOpacity: 0.65, tip: false }),
         bubblePlot(bbPlotData, "foreign", { fill: "orange", fillOpacity: 0.65, tip: false }),
         bubblePlot(bbPlotProvData, "domestic", { fill: "steelblue", fillOpacity: 0.65, tip: false }),
         bubblePlot(bbPlotProvData, "foreign", { fill: "orange", fillOpacity: 0.65, tip: false }),
         bubblePlotTooltip(bbPlotTooltipData, { fill: "pink", tip: true, fillOpacity: 0 }),
-        radiusLegend([0.25, 1, 2], { r: (d) => d * 1e6, title: (d) => `${d}M`}), // [0.25, 1, 2]
+        radiusLegend([0.25, 1, 2], { r: (d) => d * 1e6, title: (d) => `${d}M`}),
 
         // Location text labels
         Plot.text(phProvinces.features, Plot.centroid({
@@ -244,7 +246,7 @@ const subTotal = phTourismFiltered
     // Filter out provinces but not NCR cities
     if(!isNaN(d.count)){
       if(d.province != d.muniCity) return true
-      else if(d.region == "National Capital Region (NCR)") return true
+      else if(d.region == NCR) return true
       else false
     } 
   })
@@ -277,7 +279,7 @@ const radiosTraveler = view(radiosTravelerForm)
 const topDestinationsChange = aq.from(phTourismLong)
   .filter(aq.escape(d => selectRegion === "All regions" ? true : 
                     d.region === selectRegion ))
-  .groupby("year", "muniCity", "province")
+  .groupby("year", "muniCity", "province", "region")
   .pivot("traveler", "count")
   .derive({ 
     provMuniCity: aq.escape(d => `${d.muniCity}, ${d.province}`),
@@ -286,7 +288,7 @@ const topDestinationsChange = aq.from(phTourismLong)
   .groupby("provMuniCity")
   .fold(["domestic", "foreign", "overseas", "total"]).rename({ key: "traveler", value: "count" })
   // Pivot for year, to get perc change
-  .groupby("province", "muniCity", "provMuniCity", "traveler")
+  .groupby("region", "province", "muniCity", "provMuniCity", "traveler")
   .pivot("year", "count")
   .ungroup()
   .rename({ "2019": "year2019", "2021": "year2021", "2023": "year2023" })

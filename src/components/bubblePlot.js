@@ -1,16 +1,15 @@
 import * as Plot from "npm:@observablehq/plot";
-import { formatNumber, dashIfNaN } from "./utils.js"
+import { formatNumber, dashIfNaN, getDestination } from "./utils.js"
 import * as d3 from "npm:d3";
 
-function bubblePlot({data, features}, selTraveler, { fill, fillOpacity }){
-    const dataPropsMap = new Map(data
+function bubblePlot({data, features}, selTraveler, options){
+    const dataPropsMap = new Map([...data]
         .filter(d => selTraveler !== "total" ? d.traveler === selTraveler : true)
         .map((d => [d.id, d])))
 
     return [ Plot.dot(features, Plot.centroid({
+        ...options,
         r: d => +dataPropsMap.get(d.id)?.count,
-        fill,
-        fillOpacity,
         stroke: "#ffffff",
         strokeOpacity: 0.65,
         strokeWidth: 0.75,
@@ -21,23 +20,35 @@ function bubblePlot({data, features}, selTraveler, { fill, fillOpacity }){
 
 function bubblePlotTooltip({data, features}, { fill, fillOpacity, tip }){
     const dataPropsMap = new Map(data.map((d => [d.id, d])))
+    const { phProvFeatures, phMuniFeatures } = features
 
-    return [ 
-        Plot.dot(features, Plot.centroid({
-            r: d => +dataPropsMap.get(d.id)?.domestic + +dataPropsMap.get(d.id)?.foreign, // domestic as the radius anchor that can be hovered
+    function tooltipPlot(features){
+      return Plot.dot(features, Plot.centroid({
+            r: d => +dataPropsMap.get(d.id)?.total, // domestic as the radius anchor that can be hovered
             fill,
             fillOpacity,
             stroke: "transparent",
             geometry: d => d.geometry,
             channels: {
-                Destination: ({ id }) => `${dataPropsMap.get(id)?.muniCity}, ${dataPropsMap.get(id)?.province}`,
+                Destination: ({ id }) => getDestination({ 
+                  region: dataPropsMap.get(id)?.region,
+                  province: dataPropsMap.get(id)?.province,
+                  muniCity: dataPropsMap.get(id)?.muniCity, 
+                }),
                 Total: ({ id }) => formatNumber(dataPropsMap.get(id)?.total),
                 Domestic: ({ id }) => formatNumber(dataPropsMap.get(id)?.domestic),
                 Foreign: ({ id }) => formatNumber(dataPropsMap.get(id)?.foreign),
                 Overseas: ({ id }) => dashIfNaN(formatNumber(dataPropsMap.get(id)?.overseas)),
             },
             tip
-        })),
+        }))
+    }
+
+    return [ 
+        // Tooltip for PROVINCIAL level data
+        tooltipPlot(phProvFeatures),
+        // Tooltip for MUNICIPAL level data
+        tooltipPlot(phMuniFeatures),
         Plot.tip(features, Plot.pointer({
             x: "weight",
             y: "height",

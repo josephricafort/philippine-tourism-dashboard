@@ -1,5 +1,7 @@
 import * as d3 from "npm:d3";
 
+import { NCR } from "./constants.js";
+
 // Create a formatter function
 function formatNumber(n){ 
     const digit = Math.abs(n) > 10 ? 2 : 1
@@ -9,6 +11,15 @@ function formatNumber(n){
 function zeroIfNaN (num) { return !isNaN(num) ? num : 0 }
 
 function dashIfNaN (num) { return !isNaN(num) ? num : "-" }
+
+function getDestination ({ region, muniCity, province }) {
+  if (muniCity !== province) { 
+    return `${muniCity}, ${province}` 
+  } else if(region === NCR) { return `${province}` }
+  else { return `${province} (province)` }
+}
+
+function getDestinationNCR ( muniCity ) { return muniCity }
 
 function rangeInput(options = {}) {
   const {
@@ -202,4 +213,11 @@ function rangeInput(options = {}) {
   return dom;
 }
 
-export { formatNumber, zeroIfNaN, dashIfNaN, rangeInput }
+export { 
+  formatNumber, 
+  zeroIfNaN, 
+  dashIfNaN, 
+  getDestination,
+  getDestinationNCR,
+  rangeInput 
+}
