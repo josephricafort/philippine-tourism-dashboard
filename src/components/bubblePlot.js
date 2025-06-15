@@ -1,6 +1,7 @@
 import * as Plot from "npm:@observablehq/plot";
 import { formatNumber, dashIfNaN, getDestination } from "./utils.js"
 import * as d3 from "npm:d3";
+import { ALL_REGIONS, REGIONS_PROVINCE_TOTALS } from "./constants.js";
 
 function bubblePlot({data, features}, selTraveler, options){
     const dataPropsMap = new Map([...data]
@@ -18,15 +19,16 @@ function bubblePlot({data, features}, selTraveler, options){
     }))]
 }
 
-function bubblePlotTooltip({data, features}, { fill, fillOpacity, tip }){
+function bubblePlotTooltip({data, features}, selectRegion, options){
     const dataPropsMap = new Map(data.map((d => [d.id, d])))
     const { phProvFeatures, phMuniFeatures } = features
 
     function tooltipPlot(features){
       return Plot.dot(features, Plot.centroid({
+            ...options,
             r: d => +dataPropsMap.get(d.id)?.total, // domestic as the radius anchor that can be hovered
-            fill,
-            fillOpacity,
+            // fill,
+            // fillOpacity,
             stroke: "transparent",
             geometry: d => d.geometry,
             channels: {
@@ -40,13 +42,16 @@ function bubblePlotTooltip({data, features}, { fill, fillOpacity, tip }){
                 Foreign: ({ id }) => formatNumber(dataPropsMap.get(id)?.foreign),
                 Overseas: ({ id }) => dashIfNaN(formatNumber(dataPropsMap.get(id)?.overseas)),
             },
-            tip
+            tip: true
         }))
     }
 
     return [ 
         // Tooltip for PROVINCIAL level data
-        tooltipPlot(phProvFeatures),
+        // Only show if not in "All regions" and if the region is one of the REGIONS_PROVINCE_TOTALS
+        selectRegion !== ALL_REGIONS && 
+          REGIONS_PROVINCE_TOTALS.includes(selectRegion) && 
+          tooltipPlot(phProvFeatures) || null,
         // Tooltip for MUNICIPAL level data
         tooltipPlot(phMuniFeatures),
         Plot.tip(features, Plot.pointer({

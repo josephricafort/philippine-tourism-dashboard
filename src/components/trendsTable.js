@@ -33,7 +33,7 @@ function trendsTable(data, {resize, selTraveler, rangeTop }) {
               .filter(d => d.traveler === selTraveler)
               // .slice(0, rangeTop)
               .map(({ region, province, muniCity, provMuniCity, traveler, year2019, year2021, year2023, percChange }) => html`<tr>
-                <td class="municity">${ getDestination({region, province, muniCity})}</td>
+                <td class="municity">${ getDestination({ region, province, muniCity })}</td>
                 <td class="tourist-count">${year2019 > 0 ? formatNumber(year2019) : "-"}</td>
                 <td class="tourist-count">${!isNaN(year2021) ? formatNumber(year2021) : "-"}</td>
                 <td class="tourist-count">${formatNumber(year2023)}</td>

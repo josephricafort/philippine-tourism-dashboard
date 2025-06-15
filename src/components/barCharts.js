@@ -1,5 +1,5 @@
 import * as Plot from "npm:@observablehq/plot";
-import { getDestination } from "./utils.js"
+import { getDestination, formatNumber } from "./utils.js"
 import { NCR } from "./constants.js";
 
 function totalBars(data, { width, height }){
@@ -40,16 +40,24 @@ function topDestBars(data, { width, height }){
     marks: [
         Plot.barX(
             topDestinations,
-        Plot.groupY(
+          Plot.groupY(
             { x: "sum" },
             { x: "count",
-            y: d => getDestination({region: d.region, province: d.province, muniCity: d.muniCity}),
-            fill: "traveler",
-            sort: { y: "x", reverse: true },
-            tickFormat: ".0s"
+              y: ({ region, province, muniCity }) => getDestination({ region, province, muniCity }),
+              fill: "traveler",
+              sort: { y: "x", reverse: true },
+              tickFormat: ".0s"
             }
-        )
+          )
         ),
+        // Plot.textX(topDestinations, 
+        //   Plot.stackX({
+        //     x: "count", 
+        //     y: ({ region, province, muniCity }) => getDestination({ region, province, muniCity }),
+        //     text: d => formatNumber(d.count), 
+        //     inset: 0.5
+        //   })
+        // ),
         Plot.axisX({
             tickFormat: ".1s"
         }),

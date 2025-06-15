@@ -12,11 +12,13 @@ function zeroIfNaN (num) { return !isNaN(num) ? num : 0 }
 
 function dashIfNaN (num) { return !isNaN(num) ? num : "-" }
 
-function getDestination ({ region, muniCity, province }) {
-  if (muniCity !== province) { 
-    return `${muniCity}, ${province}` 
-  } else if(region === NCR) { return `${province}` }
-  else { return `${province} (province)` }
+function getDestination ({ region, province, muniCity }) {
+  if (province == muniCity) { 
+    // if(region === NCR) { return `${muniCity}` }
+    // else return `${muniCity}`
+    return muniCity
+  }
+  else { return `${muniCity}, ${province}` }
 }
 
 function getDestinationNCR ( muniCity ) { return muniCity }

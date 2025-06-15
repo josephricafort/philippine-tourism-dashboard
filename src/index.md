@@ -7,7 +7,7 @@ toc: false
 ```js
 import { op } from "npm:arquero"
 import { formatNumber, zeroIfNaN } from "./components/utils.js"
-import { NCR } from "./components/constants.js"
+import { NCR, ALL_REGIONS } from "./components/constants.js"
 ```
 
 ```js
@@ -66,7 +66,7 @@ const regions = [...new Set(phTourismLong.map(d => d.region))]
 const phTourismFiltered = phTourismLong
   .filter(d => 
     checkboxYears.includes(String(d.year)) &&
-    (selectRegion === "All regions" ? true : selectRegion === d.region)
+    (selectRegion === ALL_REGIONS ? true : selectRegion === d.region)
     )
 const phTourismPropsMap = new Map(phTourismFiltered.map((d => [String(d.id), d])))
 ```
@@ -144,7 +144,7 @@ const phCenter = [122, 12.6]
 const phZoom = 7.7
 
 let circle
-if(selectRegion === "All regions") {
+if(selectRegion === ALL_REGIONS) {
   circle = d3.geoCircle().center(phCenter).radius(phZoom).precision(2)()
 } else {
   const { centerLong, centerLat, zoom } = regCenterZoomMap.get(selectRegion)
@@ -154,11 +154,11 @@ if(selectRegion === "All regions") {
 const dataBbPlot = phTourismWideLong
         .filter(d => 
           checkboxYears.includes(String(d.year)) &&
-          (selectRegion === "All regions" ? true : selectRegion === d.region))
+          (selectRegion === ALL_REGIONS ? true : selectRegion === d.region))
 const dataBbPlotTooltip = phTourismWide
         .filter(d => 
           checkboxYears.includes(String(d.year)) &&
-          (selectRegion === "All regions" ? true : selectRegion === d.region))
+          (selectRegion === ALL_REGIONS ? true : selectRegion === d.region))
 
 const bbPlotData = { data: dataBbPlot, features: phMuniFeatures, checkboxYears, selectRegion }
 const bbPlotProvData = { data: dataBbPlot, features: phProvFeatures, checkboxYears, selectRegion }
@@ -187,7 +187,7 @@ function mapPh({width, height}) {
         // Plot.geo(phNation, { fill: "#333333", className: "nation" }),
         Plot.geo(phRegions.features, {
           fill: d => phRegionsMap.get(d.properties["CC_REG"]) === selectRegion ? "#555555" : "#333333",
-          strokeWidth: 2,
+          strokeWidth: 5,
           className: "region"
         }),
         Plot.geo(phProvincesMesh, { 
@@ -201,7 +201,7 @@ function mapPh({width, height}) {
         bubblePlot(bbPlotData, "foreign", { fill: "orange", fillOpacity: 0.65, tip: false }),
         bubblePlot(bbPlotProvData, "domestic", { fill: "steelblue", fillOpacity: 0.65, tip: false }),
         bubblePlot(bbPlotProvData, "foreign", { fill: "orange", fillOpacity: 0.65, tip: false }),
-        bubblePlotTooltip(bbPlotTooltipData, { fill: "pink", tip: true, fillOpacity: 0 }),
+        bubblePlotTooltip(bbPlotTooltipData, selectRegion, { fill: "pink", fillOpacity: 0 }),
         radiusLegend([0.25, 1, 2], { r: (d) => d * 1e6, title: (d) => `${d}M`}),
 
         // Location text labels
@@ -235,7 +235,7 @@ const checkboxYears = view(checkboxYearsForm)
 
 
 // const checkboxesTravelers = view(Inputs.checkbox(["foreign", "overseas", "domestic"], {label: "Select travelers", value: ["foreign"]}))
-const selectRegionForm = Inputs.select(["All regions", ...regions], {label: "Select region"})
+const selectRegionForm = Inputs.select([ALL_REGIONS, ...regions], {label: "Select region"})
 const selectRegion = view(selectRegionForm)
 ```
 
@@ -277,7 +277,7 @@ const radiosTravelerForm = Inputs.radio(["total", "domestic", "foreign"], {label
 const radiosTraveler = view(radiosTravelerForm)
 
 const topDestinationsChange = aq.from(phTourismLong)
-  .filter(aq.escape(d => selectRegion === "All regions" ? true : 
+  .filter(aq.escape(d => selectRegion === ALL_REGIONS ? true : 
                     d.region === selectRegion ))
   .groupby("year", "muniCity", "province", "region")
   .pivot("traveler", "count")
