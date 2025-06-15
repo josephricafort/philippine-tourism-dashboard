@@ -2,15 +2,13 @@ import * as Plot from "npm:@observablehq/plot";
 import { formatNumber, dashIfNaN } from "./utils.js"
 import * as d3 from "npm:d3";
 
-function bubblePlot(data, selTraveler, { fill, fillOpacity }){
-    const { dataBbPlot, phMuniFeatures } = data;
-
-    const dataPropsMap = new Map(dataBbPlot
+function bubblePlot({data, features}, selTraveler, { fill, fillOpacity }){
+    const dataPropsMap = new Map(data
         .filter(d => selTraveler !== "total" ? d.traveler === selTraveler : true)
         .map((d => [d.id, d])))
 
-    return [ Plot.dot(phMuniFeatures, Plot.centroid({
-        r: d => dataPropsMap.get(d.id)?.count,
+    return [ Plot.dot(features, Plot.centroid({
+        r: d => +dataPropsMap.get(d.id)?.count,
         fill,
         fillOpacity,
         stroke: "#ffffff",
@@ -21,14 +19,12 @@ function bubblePlot(data, selTraveler, { fill, fillOpacity }){
     }))]
 }
 
-function bubblePlotTooltip(data, { fill, fillOpacity, tip }){
-    const { dataBbPlotTooltip, phMuniFeatures } = data;
-
-    const dataPropsMap = new Map(dataBbPlotTooltip.map((d => [d.id, d])))
+function bubblePlotTooltip({data, features}, { fill, fillOpacity, tip }){
+    const dataPropsMap = new Map(data.map((d => [d.id, d])))
 
     return [ 
-        Plot.dot(phMuniFeatures, Plot.centroid({
-            r: d => dataPropsMap.get(d.id)?.total,
+        Plot.dot(features, Plot.centroid({
+            r: d => +dataPropsMap.get(d.id)?.domestic + +dataPropsMap.get(d.id)?.foreign, // domestic as the radius anchor that can be hovered
             fill,
             fillOpacity,
             stroke: "transparent",
@@ -42,7 +38,7 @@ function bubblePlotTooltip(data, { fill, fillOpacity, tip }){
             },
             tip
         })),
-        Plot.tip(phMuniFeatures, Plot.pointer({
+        Plot.tip(features, Plot.pointer({
             x: "weight",
             y: "height",
             filter: (d) => d.info,

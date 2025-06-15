@@ -46,8 +46,6 @@ const phTourismWide = aq.from(phTourismLong)
   .derive({ total: aq.escape(d => d.overseas ? d.domestic + d.foreign + d.overseas : d.domestic + d.foreign ) })
   .orderby("year", "muniCity", "province", "id")
   .objects()
-console.log("phTourismWide Davao Region: ", phTourismWide.filter(d => d.region == "Region XI (Davao Region)"))
-console.log(undefined + 1)
 
 const phTourismWideLong = aq.from(phTourismWide)
   .groupby("year", "id", "region", "province", "muniCity")
@@ -81,17 +79,35 @@ const philippines = FileAttachment("./data/philippines.json").json({ typed: true
 // Data for the map
 const phNation = topojson.feature(philippines, philippines.objects.land)
 const phProvinces = topojson.feature(philippines, philippines.objects.provinces)
-const phProvincesMap = new Map(phProvinces.features.map(d => [d.properties["CC_1"], d]))
+// const nirProvinces = [
+//   { province: "Negros Occidental", newId: "1845" },
+//   { province: "Negros Oriental", newId: "1846" },
+//   { province: "Siquijor", newId: "1861" }
+// ]
+const phProvFeatures = aq.from(phProvinces.features)
+    // Make correspondence codes into 9-digit standard
+    // First four digits and 5 zeros
+    .derive({
+      id: d => {
+        const provCode = d.properties["CC_1"]
+        if (provCode.length == 3) { return `0${provCode}00000` }
+        else if (provCode.length == 4) { return `${provCode}00000` }
+        else return `${provCode}00000`
+      }
+    })
+    .objects()
+
+// console.log("phProvincesMap: ", phProvincesMap)
 const phProvincesMesh = topojson.mesh(philippines, philippines.objects.provinces, (a, b) => a!== b)
 
-const { type, features } = topojson.feature(philippines, philippines.objects.municipalities)
-const phMuniFeatures = features.map(f => {
+const { type, features: muniFeatures } = topojson.feature(philippines, philippines.objects.municipalities)
+const phMuniFeatures = muniFeatures.map(f => {
     const {type, properties, geometry} = f
     return { 
       type,
       id: String(properties["CC_2_MOD"]),
       properties,
-      geometry
+      geometry 
     }
 })
 
@@ -143,8 +159,9 @@ const dataBbPlotTooltip = phTourismWide
           checkboxYears.includes(String(d.year)) &&
           (selectRegion === "All regions" ? true : selectRegion === d.region))
 
-const bbPlotData = { dataBbPlot, phMuniFeatures, checkboxYears, selectRegion }
-const bbPlotTooltipData = { dataBbPlotTooltip, phMuniFeatures, checkboxYears, selectRegion }
+const bbPlotData = { data: dataBbPlot, features: phMuniFeatures, checkboxYears, selectRegion }
+const bbPlotProvData = { data: dataBbPlot, features: phProvFeatures, checkboxYears, selectRegion }
+const bbPlotTooltipData = { data: dataBbPlotTooltip, features: phMuniFeatures, checkboxYears, selectRegion }
 
 function mapPh({width, height}) {
   const opacityScale = d3.scaleLinear()
@@ -180,9 +197,11 @@ function mapPh({width, height}) {
         // Bubble plots
         bubblePlot(bbPlotData, "domestic", { fill: "steelblue", fillOpacity: 0.65, tip: false }),
         bubblePlot(bbPlotData, "foreign", { fill: "orange", fillOpacity: 0.65, tip: false }),
+        bubblePlot(bbPlotProvData, "domestic", { fill: "steelblue", fillOpacity: 0.65, tip: false }),
+        bubblePlot(bbPlotProvData, "foreign", { fill: "orange", fillOpacity: 0.65, tip: false }),
         bubblePlotTooltip(bbPlotTooltipData, { fill: "pink", tip: true, fillOpacity: 0 }),
         radiusLegend([0.25, 1, 2], { r: (d) => d * 1e6, title: (d) => `${d}M`}), // [0.25, 1, 2]
-        // radiusLegend([minCount / EXP, meanCount / EXP, maxCount / EXP], { r: (d) => d * EXP, title: (d) => `${formatNumber(d)}` }), // [0.25, 1, 2]
+
         // Location text labels
         Plot.text(phProvinces.features, Plot.centroid({
           text: d => d.properties["NAME_1"],
@@ -236,10 +255,10 @@ import { totalBars, topDestBars } from "./components/barCharts.js"
 const topDestinations = aq.from(phTourismFiltered)
   .groupby("muniCity", "province")
   .pivot("traveler", "count")
-  .derive({ sum: d => d.domestic + d.foreign + d.overseas })
+  .derive({ sum: d => d.overseas ? d.domestic + d.foreign + d.overseas : d.domestic + d.foreign })
   .filter(d => d.sum > 0)
   .orderby(aq.desc("sum", "traveler"))
-  .slice(0, 9)
+  .slice(0, 10)
   .fold(["domestic", "foreign", "overseas"]).rename({ key: "traveler", value: "count" })
   .objects()
 
@@ -274,7 +293,7 @@ const topDestinationsChange = aq.from(phTourismLong)
   // Derive a percent change between 2019 and 2023
   .derive({ percChange: aq.escape(d => {
     const initCount = !isNaN(d.year2019) ? d.year2019 : d.year2021
-    if(d.year2019 === 0) { return 0 }
+    if(d.year2019 == 0) { return 0 }
     return +((d.year2023 - initCount)/Math.abs(initCount + 0.0000000001) * 100).toFixed(2)
     }) })
   .orderby(aq.desc("percChange"))
@@ -287,8 +306,6 @@ const topDestinationsChange = aq.from(phTourismLong)
   .filter(aq.escape(d => !isNaN(d.year2019) && !isNaN(d.year2023) ))
   .groupby("provMuniCity", "traveler")
   .objects()
-
-console.log("topDestinationsChange, ", topDestinationsChange)
 
 const topDestChangeLong = aq.from(topDestinationsChange)
   .groupby("province", "muniCity", "provMuniCity")
