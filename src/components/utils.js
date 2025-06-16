@@ -4,8 +4,7 @@ import { NCR } from "./constants.js";
 
 // Create a formatter function
 function formatNumber(n){ 
-    const digit = Math.abs(n) > 10 ? 2 : 1
-    return d3.format(`.${digit}s`)(n)
+  return d3.format(".2s")(n)
 }
 
 function zeroIfNaN (num) { return !isNaN(num) ? num : 0 }

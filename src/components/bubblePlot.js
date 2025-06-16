@@ -57,6 +57,7 @@ function bubblePlotTooltip({data, features}, selectRegion, options){
         Plot.tip(features, Plot.pointer({
             x: "weight",
             y: "height",
+            r: { ariaHidden: true },
             filter: (d) => d.info,
             title: (d) => [d.name, d.info].join("\n\n")
         }))
@@ -68,8 +69,8 @@ function radiusLegend (data, options) {
     ...options,
     frameAnchor: "top-left",
     strokeWidth: 0.8,
-    dx: 60,
-    dy: 90,
+    dx: 120,
+    dy: 180,
     render: (i, s, v, d, c, next) => {
       const g = next(i, s, v, d, c);
       d3.select(g)

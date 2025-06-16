@@ -135,6 +135,8 @@ function mapPh({width, height}) {
     .domain(d3.extent(d3.map(phTourismFiltered, d => d.count)))
     .range([0.3, 1])
 
+  const range = selectRegion === ALL_REGIONS ? [0, 35] : [0, 50]
+
   return Plot.plot({
     projection: {
       type: "mercator",
@@ -144,7 +146,7 @@ function mapPh({width, height}) {
     },
     width,
     height,
-    length: { range: [0, 150] },
+    r: { range, aria: false },
     marks: [
         Plot.geo(phRegions.features, {
           fill: d => phRegionsMap.get(d.properties["CC_REG"]) === selectRegion ? "#555555" : "#333333",
@@ -170,8 +172,9 @@ function mapPh({width, height}) {
           text: d => d.properties["NAME_1"],
           fill: "#cccccc",
           stroke: "#333333",
-          strokeWidth: 1,
-          fontSize: 12,
+          strokeWidth: 3,
+          fontSize: 14,
+          fontWeight: 500,
           className: "province-name",
           filter: d => {
             const id = d.properties["CC_1"]
@@ -324,6 +327,13 @@ const rangeTop = 10
       <br/>
       ${view(radiosTravelerForm)}
       ${trendsTable(trendsTableData, { resize, selTraveler: radiosTraveler, rangeTop })}
+    </div>
+    <div class="card notes">
+      <h4>Notes</h4>
+      <ul>
+        <li>While majority of the provinces have data up to the municipal level, some regions only have up to provincial level data.</li>
+        <li>Bangsamoro region was not included due to insufficient data</li>
+      </ul>
     </div>
   </div>  
   <div class="card grid-colspan-1">

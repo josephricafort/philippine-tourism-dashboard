@@ -39,7 +39,7 @@ function trendsTable(data, {resize, selTraveler, rangeTop }) {
                 <td class="tourist-count">${formatNumber(year2023)}</td>
                 <td class="sparkline">${sparklineDest({ topDestChangeLong }, traveler, provMuniCity)}</td>
                 <td class="tourist-perc-change" style="${percChangeStyle(percChange)}">
-                    ${percChange > 0 ? `+${formatNumber(percChange)}` : percChange }%
+                    ${formatNumber(percChange)}%
                 </td>
               </tr>`)}
           </tbody>
