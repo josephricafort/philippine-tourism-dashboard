@@ -150,6 +150,7 @@ function mapPh({width, height}) {
     marks: [
         Plot.geo(phRegions.features, {
           fill: d => phRegionsMap.get(d.properties["CC_REG"]) === selectRegion ? "#555555" : "#333333",
+          // fillOpacity: d => phRegionsMap.get(d.properties["CC_REG"]) ? 1 ? 0,
           className: "region-fill"
         }),
         Plot.geo(phProvincesMesh, { 
@@ -160,10 +161,11 @@ function mapPh({width, height}) {
 
         // Bubble plots
         // bubblePlot(bbPlotData, { fill: "steelblue", fillOpacity: 0.65, tip: false }),
-        bubblePlot(bbPlotData, "domestic", { fill: "steelblue", fillOpacity: 0.65, tip: false }),
-        bubblePlot(bbPlotData, "foreign", { fill: "orange", fillOpacity: 0.65, tip: false }),
-        bubblePlot(bbPlotProvData, "domestic", { fill: "steelblue", fillOpacity: 0.65, tip: false }),
-        bubblePlot(bbPlotProvData, "foreign", { fill: "orange", fillOpacity: 0.65, tip: false }),
+        bubblePlot(bbPlotData, "domestic", { fill: "steelblue", fillOpacity: 0.75, tip: false }),
+        bubblePlot(bbPlotData, "foreign", { fill: "orange", fillOpacity: 0.75, tip: false }),
+        // Provincial data for some regions
+        bubblePlot(bbPlotProvData, "domestic", { fill: "steelblue", fillOpacity: 0.75, tip: false }),
+        bubblePlot(bbPlotProvData, "foreign", { fill: "orange", fillOpacity: 0.75, tip: false }),
         bubblePlotTooltip(bbPlotTooltipData, selectRegion, { fill: "pink", fillOpacity: 0 }),
         radiusLegend([0.25, 1, 2], { r: (d) => d * 1e6, title: (d) => `${d}M`}),
 
@@ -281,6 +283,10 @@ const topDestGains = aq.from(topDestinationsChange)
 ```
 
 ```js
+import { percDistChart } from "./components/distributionChart.js"
+```
+
+```js
 // All destinations table
 const searchPhTourism = Inputs.search(phTourismWide);
 const searchPhTourismValue = Generators.input(searchPhTourism);
@@ -326,19 +332,22 @@ const rangeTop = 10
       <h4>Trending Destinations between 2019 and 2023 in ${selectRegion}</h4>
       <br/>
       ${view(radiosTravelerForm)}
+      ${resize((width) => percDistChart({ topDestChangeLong }, radiosTraveler, { width } ))}
       ${trendsTable(trendsTableData, { resize, selTraveler: radiosTraveler, rangeTop })}
     </div>
     <div class="card notes">
       <h4>Notes</h4>
       <ul>
         <li>While majority of the provinces have data up to the municipal level, some regions only have up to provincial level data.</li>
-        <li>Bangsamoro region was not included due to insufficient data</li>
+        <li>Bangsamoro region was not included due to significantly insufficient data</li>
+        <li>Municipal data may or may not sum up to Provincial data</li>
+        <li>Some destinations like Boracay (Malay, Aklan), Siargao Island (Gen. Luna, Surigao del Norte) and Clark (Angeles City) were encoded in their municipal level data to keep in standard with the released Philippine Standard Geographic Code and joining multiple data would be easier.</li>
       </ul>
     </div>
   </div>  
   <div class="card grid-colspan-1">
     <h4>Distribution of tourists across ${selectRegion}</h4>
-    <p>Hover over the circles in the map to see the tourist counts.</p>
+    <p>Hover over the circles to see tourist counts.</p>
     ${resize((width) => mapPh({width}))}
   </div>
 </div>

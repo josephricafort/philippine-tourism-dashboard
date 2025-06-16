@@ -27,10 +27,9 @@ function bubblePlotTooltip({data, features}, selectRegion, options){
       return Plot.dot(features, Plot.centroid({
             ...options,
             r: d => +dataPropsMap.get(d.id)?.total, // domestic as the radius anchor that can be hovered
-            // fill,
-            // fillOpacity,
             stroke: "transparent",
             geometry: d => d.geometry,
+            sort: {channel: "-r"},
             channels: {
                 Destination: ({ id }) => getDestination({ 
                   region: dataPropsMap.get(id)?.region,
@@ -42,7 +41,9 @@ function bubblePlotTooltip({data, features}, selectRegion, options){
                 Foreign: ({ id }) => formatNumber(dataPropsMap.get(id)?.foreign),
                 Overseas: ({ id }) => dashIfNaN(formatNumber(dataPropsMap.get(id)?.overseas)),
             },
-            tip: true
+            tip: {
+              format: { r: false }
+            }
         }))
     }
 
