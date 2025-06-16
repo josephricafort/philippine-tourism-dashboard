@@ -1,6 +1,7 @@
 import * as Plot from "npm:@observablehq/plot";
 import  { html } from "npm:htl";
 import { formatNumber, getDestination, getDestinationNCR } from "./utils.js";
+import { GREEN, RED } from "./constants.js"
 
 function trendsTable(data, {resize, selTraveler, rangeTop }) {
   const { topDestinationsChange, topDestChangeLong } = data;
@@ -90,4 +91,48 @@ function sparklineDest(data, traveler, provMuniCity) {
   })
 }
 
-export { trendsTable, sparklineDest };
+function totalTrendsLine({ topDestChangeLong }, selRegion, selTraveler, { width}) { 
+  const dataRegion = topDestChangeLong
+    .filter(d => (selRegion === "All regions" ? true : d.region === selRegion) &&
+           (d.traveler === selTraveler))
+  
+  const [startCount, endCount] = dataRegion.reduce((sumArr, d) => {
+    if(!isNaN(d.count)){
+      const startVal = d.year == "2019" ? sumArr[0] + +d.count : sumArr[0] // If 2019 is unavailable, use 2021 numbers (d.year == "2019" || d.year == "2021")
+      const endVal = d.year == "2023" ? sumArr[1] + +d.count : sumArr[1]
+      return [startVal, endVal]
+    } else return sumArr
+  }, [0, 0])
+
+  const percChange = (endCount - startCount) / startCount
+  
+  return Plot.plot({
+    marginLeft: 75,
+    height: 120,
+    width,
+    // x: { domain: ["2019", "2021", "2023"].map(yr => new Date(+yr, 0, 1)) },
+    marks: [
+      Plot.ruleY([0]),
+      Plot.lineY(dataRegion, Plot.binX(
+        { y: "sum" }, 
+        { x: d => new Date(+d.year, 0, 1), 
+         y: "count",
+         stroke: percChange > 0 ? GREEN : RED,
+         strokeWidth: 3
+      })),
+      Plot.areaY(dataRegion, Plot.binX(
+        { y: "sum" }, 
+        { x: d => new Date(+d.year, 0, 1), 
+         y: "count",
+         fill: percChange > 0 ? GREEN : RED,
+         fillOpacity: 0.25
+      })),
+      Plot.axisY({
+          tickFormat: ".0s",
+      }),
+    ]
+  })
+
+}
+
+export { trendsTable, sparklineDest, totalTrendsLine };

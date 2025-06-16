@@ -12,7 +12,6 @@ function percDistChart({ topDestChangeLong }, traveler, { width } ) {
         y: { grid: true },
         height: 150,
         width,
-        marginLeft: 75,
         marks: [
             Plot.rectY(dataFiltered,
                 Plot.binX(
@@ -20,7 +19,7 @@ function percDistChart({ topDestChangeLong }, traveler, { width } ) {
                         x: "percChange", 
                         y: "count",
                         fill: d => +d.percChange > 0 ? GREEN : RED,
-                        interval: 25 // selectRegion !== "All regions" ? 100 : 0
+                        interval: 25, // selectRegion !== "All regions" ? 100 : 0
                     })),
             Plot.ruleY([0]),
             Plot.ruleX([0])

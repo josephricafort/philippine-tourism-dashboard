@@ -7,7 +7,7 @@ toc: false
 ```js
 import { op } from "npm:arquero"
 import { formatNumber, zeroIfNaN } from "./components/utils.js"
-import { NCR, ALL_REGIONS } from "./components/constants.js"
+import { NCR, ALL_REGIONS, GREEN, RED } from "./components/constants.js"
 ```
 
 ```js
@@ -277,9 +277,30 @@ const topDestChangeLong = aq.from(topDestinationsChange)
   .derive({ year: aq.escape(d => d.year.replaceAll("year", "")) })
   .objects()
 
-const topDestGains = aq.from(topDestinationsChange)
-  .orderby(aq.desc("percChange"))
-  .objects()
+console.log("topDestChangeLong: ", topDestChangeLong)
+```
+
+```js
+const dataDestChangeRegion = topDestChangeLong
+    .filter(d => (selectRegion === ALL_REGIONS ? true : d.region === selectRegion) &&
+           (d.traveler === radiosTraveler))
+
+const [startCount, endCount] = dataDestChangeRegion.reduce((sumArr, d) => {
+  if(!isNaN(d.count)){
+    const startVal = d.year == "2019" ? sumArr[0] + +d.count : sumArr[0] // If 2019 is unavailable, use 2021 numbers (d.year == "2019" || d.year == "2021")
+    const endVal = d.year == "2023" ? sumArr[1] + +d.count : sumArr[1]
+    return [startVal, endVal]
+  } else return sumArr
+}, [0, 0])
+
+const percChange = (endCount - startCount) / startCount
+console.log("percChange: ", percChange)
+
+const percChangeOverall = `${percChange > 0 ? "+" : ""}${d3.format(".2s")(percChange * 100)}%`
+
+const styledKeyValue = (child) => htl.html`
+  <span style="color: ${percChange > 0 ? GREEN : RED}";>${child}</span>
+`
 ```
 
 ```js
@@ -291,7 +312,7 @@ import { percDistChart } from "./components/distributionChart.js"
 const searchPhTourism = Inputs.search(phTourismWide);
 const searchPhTourismValue = Generators.input(searchPhTourism);
 
-import { trendsTable } from "./components/trendsTable.js"
+import { trendsTable, totalTrendsLine } from "./components/trendsTable.js"
 
 const trendsTableData = { topDestinationsChange, topDestChangeLong }
 const rangeTop = 10
@@ -305,7 +326,7 @@ const rangeTop = 10
   </div>
 </div>
 <div class="grid grid-cols-2">
-  <div>
+  <div class="grid-colspan-1">
     <div class="card" style="margin-top: 0;">
       <h4>Key Insights</h4>
       <div class="grid grid-cols-2">
@@ -314,26 +335,44 @@ const rangeTop = 10
         </div>
       </div>
       <div class="grid grid-cols-3">
-        <div class="grid-colspan-1">
+        <div class="card grid-colspan-1">
           <h4>Total and Breakdown of Tourists in ${selectRegion}</h4>
-          <span style="font-size: 2.5rem;">${formatNumber(subTotal)}</span> Travelers
-          <br/><br/>
+          <p><span class="key-value">${formatNumber(subTotal)} </span>Travelers</p>
           ${resize((width) => totalBars({phTourismFiltered}, {width}))}
           <br />
-          <p>For the totals, only the municipal value level were included while the provincial values were filtered out.</p>
         </div>
-        <div class="grid-colspan-2">
+        <div class="card grid-colspan-2">
           <h4>Top Destinations in ${selectRegion} by Total</h4>
           ${resize((width) => topDestBars({topDestinations}, {width}))}
+          <p>For the totals, only the municipal value level were included while the provincial values were filtered out.</p>
         </div>
       </div>
     </div>
     <div class="card trending-destinations">
       <h4>Trending Destinations between 2019 and 2023 in ${selectRegion}</h4>
-      <br/>
       ${view(radiosTravelerForm)}
-      ${resize((width) => percDistChart({ topDestChangeLong }, radiosTraveler, { width } ))}
-      ${trendsTable(trendsTableData, { resize, selTraveler: radiosTraveler, rangeTop })}
+      <div class="grid grid-cols-3">
+        <div class="card grid-colspan-1" style="padding-right: 10px;">
+          <h4>Overall Trend for ${selectRegion}</h4>
+          <p><span class="key-value">${styledKeyValue(percChangeOverall)}</span> Travelers</p>
+          ${resize((width) => totalTrendsLine({ topDestChangeLong }, selectRegion, radiosTraveler, { width } ))}
+        </div>
+        <div class="card grid-colspan-2">
+          <h4>Distribution of Destination Trends</h4>
+          ${resize((width) => percDistChart({ topDestChangeLong }, radiosTraveler, { width } ))}
+          <p>The more greens you see, the more arrivals in destinations. The more reds, the more decrease in destinations.</p>
+        </div>
+      </div>
+      <div class="card">
+        ${trendsTable(trendsTableData, { resize, selTraveler: radiosTraveler, rangeTop })}
+      </div>
+    </div>
+  </div>  
+  <div class="grid-colspan-1">
+    <div class="card map">
+      <h4>Distribution of tourists across ${selectRegion}</h4>
+      <p>Hover over the circles to see tourist counts.</p>
+      ${resize((width) => mapPh({width}))}
     </div>
     <div class="card notes">
       <h4>Notes</h4>
@@ -344,11 +383,6 @@ const rangeTop = 10
         <li>Some destinations like Boracay (Malay, Aklan), Siargao Island (Gen. Luna, Surigao del Norte) and Clark (Angeles City) were encoded in their municipal level data to keep in standard with the released Philippine Standard Geographic Code and joining multiple data would be easier.</li>
       </ul>
     </div>
-  </div>  
-  <div class="card grid-colspan-1">
-    <h4>Distribution of tourists across ${selectRegion}</h4>
-    <p>Hover over the circles to see tourist counts.</p>
-    ${resize((width) => mapPh({width}))}
   </div>
 </div>
 <div class="card">
@@ -363,7 +397,7 @@ const rangeTop = 10
       total: "Total", domestic: "Domestic", foreign: "Foreign", overseas: "Overseas"}})}
 </div>
 
-Want to have something similar? Contact me at josephricafort@gmail.com or see my works at [josephricafort.com](https://josephricafort.com)
+Contact me at josephricafort@gmail.com or see my works at [josephricafort.com](https://josephricafort.com)
 
 <!-- Data: Jonathan C. McDowell, [General Catalog of Artificial Space Objects](https://planet4589.org/space/gcat) -->
 
@@ -384,7 +418,7 @@ Want to have something similar? Contact me at josephricafort@gmail.com or see my
       thead {
         position: sticky;
         top: 0;
-        background: --theme-foreground;
+        background: #111111;
         z-index: 5 !important;
 
         tr {
@@ -415,6 +449,10 @@ Want to have something similar? Contact me at josephricafort@gmail.com or see my
         }
       }
     }
+  }
+
+  .key-value {
+    font-size: 2rem;
   }
 
 
