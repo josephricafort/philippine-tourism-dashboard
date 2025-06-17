@@ -90,7 +90,60 @@ const regCenterZoom = FileAttachment("./data/regional-center-zoom.csv").csv({ ty
 // Philippine Map
 import { bubblePlot, bubblePlotTooltip, radiusLegend } from "./components/bubblePlot.js"
 import { legendSpike } from "./data/utils.js"
+const phInset = FileAttachment("./data/phInset.json").json({ typed: true })
 const phRegionsFile = FileAttachment("./data/region.json").json({ typed: true })
+```
+
+```js
+// Inset Philippines Map
+const regionsMap = new Map(aq.from(phTourismLong)
+  .select("id", "region")
+  .derive({ id: aq.escape(d => d.id.substring(0, 2)) })
+  .derive({ 
+    id: aq.escape(d => d.region === "Negros Island Region (NIR)" ? "18" : d.id ),
+    region: aq.escape(d => d.id == "12" ? "Region XII (SOCCSKSARGEN)" : d.region )
+  })
+  .dedupe()
+  .objects()
+  .map(d => [d.id, d.region])
+)
+
+const phCenter = [122, 12.6]
+const phZoom = 9
+const phInsetZoom = 5.5
+const circleInset = d3.geoCircle().center(phCenter).radius(phInsetZoom).precision(2)()
+const currRegionBox = phRegions.features
+  .filter(d => selectRegion === "All regions" ? true : regionsMap.get(d.properties["CC_REG"]) === selectRegion)
+  .map((d) => d3.geoBounds(d).flat())
+const phNationInset = topojson.feature(phInset, phInset.objects.land)
+
+function mapInsetPh() { 
+  return Plot.plot({
+    width: 175,
+    height: 225,
+    projection: {
+      type: "mercator",
+      domain: circleInset,
+      inset: 20
+    },
+    marks: [
+      Plot.geo(phNationInset, { 
+        fill: "#777777", 
+        fillOpacity: 1
+      }),
+      Plot.rect(currRegionBox, {
+        x1: "0", // or ([x1]) => x1
+        y1: "1", // or ([, y1]) => y1
+        x2: "2", // or ([,, x2]) => x2
+        y2: "3", // or ([,,, y2]) => y2
+        stroke: "white",
+        strokeWidth: 2,
+        fill: "white",
+        fillOpacity: 0.15
+      }),
+    ]
+  })
+}
 ```
 
 ```js
@@ -161,11 +214,11 @@ function mapPh({width, height}) {
 
         // Bubble plots
         // bubblePlot(bbPlotData, { fill: "steelblue", fillOpacity: 0.65, tip: false }),
-        bubblePlot(bbPlotData, "domestic", { fill: "steelblue", fillOpacity: 0.75, tip: false }),
-        bubblePlot(bbPlotData, "foreign", { fill: "orange", fillOpacity: 0.75, tip: false }),
+        bubblePlot(bbPlotData, "domestic", { fill: "steelblue", fillOpacity: 0.5, tip: false }),
+        bubblePlot(bbPlotData, "foreign", { fill: "orange", fillOpacity: 0.5, tip: false }),
         // Provincial data for some regions
-        bubblePlot(bbPlotProvData, "domestic", { fill: "steelblue", fillOpacity: 0.75, tip: false }),
-        bubblePlot(bbPlotProvData, "foreign", { fill: "orange", fillOpacity: 0.75, tip: false }),
+        bubblePlot(bbPlotProvData, "domestic", { fill: "steelblue", fillOpacity: 0.5, tip: false }),
+        bubblePlot(bbPlotProvData, "foreign", { fill: "orange", fillOpacity: 0.5, tip: false }),
         bubblePlotTooltip(bbPlotTooltipData, selectRegion, { fill: "pink", fillOpacity: 0 }),
         radiusLegend([0.25, 1, 2], { r: (d) => d * 1e6, title: (d) => `${d}M`}),
 
@@ -369,9 +422,10 @@ const rangeTop = 10
     </div>
   </div>  
   <div class="grid-colspan-1">
-    <div class="card map">
+    <div class="card map-ph">
       <h4>Distribution of tourists across ${selectRegion}</h4>
       <p>Hover over the circles to see tourist counts.</p>
+      ${selectRegion !== ALL_REGIONS ? htl.html`<div class="map-inset-ph">${mapInsetPh()}</div>` : ""}
       ${resize((width) => mapPh({width}))}
     </div>
     <div class="card notes">
@@ -453,6 +507,19 @@ Contact me at josephricafort@gmail.com or see my works at [josephricafort.com](h
 
   .key-value {
     font-size: 2rem;
+  }
+
+  .map-ph {
+    position: relative;
+    
+    .map-inset-ph {
+      position: absolute;
+      top: 25px;
+      right: 25px;
+      z-index: 10;
+      background-color: black;
+      border: 2px solid #333333;
+    }
   }
 
 

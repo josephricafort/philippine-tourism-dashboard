@@ -15,7 +15,8 @@ function bubblePlot({data, features}, selTraveler, options){
         strokeOpacity: 0.65,
         strokeWidth: 0.75,
         geometry: d => d.geometry,
-        tip: false
+        tip: false,
+        sort: {channel: "-r"},
     }))]
 }
 
