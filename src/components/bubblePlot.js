@@ -69,10 +69,10 @@ function bubblePlotTooltip({data, features}, selectRegion, options){
 function radiusLegend (data, options) {
   return Plot.dot(data, {
     ...options,
-    frameAnchor: "top-left",
+    frameAnchor: "top-right",
     strokeWidth: 0.8,
-    dx: 120,
-    dy: 180,
+    dx: -90,
+    dy: 150,
     render: (i, s, v, d, c, next) => {
       const g = next(i, s, v, d, c);
       d3.select(g)

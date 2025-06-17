@@ -55,6 +55,14 @@ const philippines = FileAttachment("./data/philippines.json").json({ typed: true
 
 ```js
 // Data for the map
+const nirProvinces = [
+    { province: "Negros Occidental", newId: "184500000" },
+    { province: "Negros Oriental", newId: "184600000" },
+    { province: "Siquijor", newId: "186100000" }
+  ]
+const nirProvincesMap = new Map(nirProvinces.map(d => [ d.province, d.newId ]))
+const nirProvincesOnly = nirProvinces.map(d => d.province)
+
 const phProvinces = topojson.feature(philippines, philippines.objects.provinces)
 const phProvFeatures = aq.from(phProvinces.features)
     // Make correspondence codes into 9-digit standard
@@ -67,6 +75,11 @@ const phProvFeatures = aq.from(phProvinces.features)
         else return `${provCode}00000`
       }
     })
+    .derive({
+      id: aq.escape(d => nirProvincesOnly.includes(d.properties["NAME_1"]) ? 
+                    nirProvincesMap.get(d.properties["NAME_1"]) : d.id)
+    })
+    // 
     .objects()
 
 const phProvincesMesh = topojson.mesh(philippines, philippines.objects.provinces, (a, b) => a!== b)
@@ -91,7 +104,7 @@ const regCenterZoom = FileAttachment("./data/regional-center-zoom.csv").csv({ ty
 import { bubblePlot, bubblePlotTooltip, radiusLegend } from "./components/bubblePlot.js"
 import { legendSpike } from "./data/utils.js"
 const phInset = FileAttachment("./data/phInset.json").json({ typed: true })
-const phRegionsFile = FileAttachment("./data/region.json").json({ typed: true })
+const phRegionsFile = FileAttachment("./data/regions_nir.json").json({ typed: true })
 ```
 
 ```js
@@ -113,7 +126,7 @@ const phZoom = 9
 const phInsetZoom = 5.5
 const circleInset = d3.geoCircle().center(phCenter).radius(phInsetZoom).precision(2)()
 const currRegionBox = phRegions.features
-  .filter(d => selectRegion === "All regions" ? true : regionsMap.get(d.properties["CC_REG"]) === selectRegion)
+  .filter(d => selectRegion === "All regions" ? true : regionsMap.get(d.properties["CC_REGION"]) === selectRegion)
   .map((d) => d3.geoBounds(d).flat())
 const phNationInset = topojson.feature(phInset, phInset.objects.land)
 
@@ -147,7 +160,7 @@ function mapInsetPh() {
 ```
 
 ```js
-const phRegions = topojson.feature(phRegionsFile, phRegionsFile.objects.region)
+const phRegions = topojson.feature(phRegionsFile, phRegionsFile.objects.regions_nir)
 const phRegionsCorrected = [
       ...aq.from(phTourismWide)
         .select("id", "region")
@@ -202,8 +215,7 @@ function mapPh({width, height}) {
     r: { range, aria: false },
     marks: [
         Plot.geo(phRegions.features, {
-          fill: d => phRegionsMap.get(d.properties["CC_REG"]) === selectRegion ? "#555555" : "#333333",
-          // fillOpacity: d => phRegionsMap.get(d.properties["CC_REG"]) ? 1 ? 0,
+          fill: d => phRegionsMap.get(d.properties["CC_REGION"]) === selectRegion ? "#555555" : "#333333",
           className: "region-fill"
         }),
         Plot.geo(phProvincesMesh, { 
@@ -223,7 +235,7 @@ function mapPh({width, height}) {
         radiusLegend([0.25, 1, 2], { r: (d) => d * 1e6, title: (d) => `${d}M`}),
 
         // Location text labels
-        Plot.text(phProvinces.features, Plot.centroid({
+        Plot.text(phProvFeatures, Plot.centroid({
           text: d => d.properties["NAME_1"],
           fill: "#cccccc",
           stroke: "#333333",
@@ -232,8 +244,7 @@ function mapPh({width, height}) {
           fontWeight: 500,
           className: "province-name",
           filter: d => {
-            const id = d.properties["CC_1"]
-            const regId = id.length === 3 ? `0${id.substring(0, 1)}` : id.substring(0, 2)
+            const regId = d.id.substring(0, 2)
             return phRegionsMap.get(regId) === selectRegion
           }
         })),
@@ -422,11 +433,13 @@ const rangeTop = 10
     </div>
   </div>  
   <div class="grid-colspan-1">
-    <div class="card map-ph">
+    <div class="card">
       <h4>Distribution of tourists across ${selectRegion}</h4>
       <p>Hover over the circles to see tourist counts.</p>
-      ${selectRegion !== ALL_REGIONS ? htl.html`<div class="map-inset-ph">${mapInsetPh()}</div>` : ""}
-      ${resize((width) => mapPh({width}))}
+      <div class="map-ph">
+        ${resize((width) => mapPh({width}))}
+        ${selectRegion !== ALL_REGIONS ? htl.html`<div class="map-inset-ph">${mapInsetPh()}</div>` : ""}
+      </div>
     </div>
     <div class="card notes">
       <h4>Notes</h4>
@@ -511,11 +524,12 @@ Contact me at josephricafort@gmail.com or see my works at [josephricafort.com](h
 
   .map-ph {
     position: relative;
+    margin-top: 0;
     
     .map-inset-ph {
       position: absolute;
       top: 25px;
-      right: 25px;
+      left: 25px;
       z-index: 10;
       background-color: black;
       border: 2px solid #333333;
