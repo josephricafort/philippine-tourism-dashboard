@@ -383,10 +383,10 @@ const rangeTop = 10
 ```
 
 <div class="grid grid-cols-1">
-  <div class="grid-rowspan-1">
+  <div class="grid-rowspan-1 header">
     <h1>🇵🇭 Where Did All Tourists Go? 🏖️</h1>
     <p>Explore the most popular and trending travel destinations in the Philippines. Source: Department of Tourism.</p>
-    ${selectRegionForm}
+    <div class="select-region-form">${selectRegionForm}</div>
   </div>
 </div>
 <div class="grid grid-cols-2">
@@ -520,6 +520,17 @@ Contact me at josephricafort@gmail.com or see my works at [josephricafort.com](h
 
   .key-value {
     font-size: 2rem;
+  }
+
+  .header {
+    .select-region-form {
+      form {
+        select {
+          padding: 5px;
+          font-weight: 700;
+        }
+      }
+    }
   }
 
   .map-ph {

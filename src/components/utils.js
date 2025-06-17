@@ -11,7 +11,7 @@ function zeroIfNaN (num) { return !isNaN(num) ? num : 0 }
 
 function dashIfNaN (num) { return !isNaN(num) ? num : "-" }
 
-function getDestination ({ region, province, muniCity }) {
+function formatDestination ({ region, province, muniCity }) {
   if (province == muniCity) { 
     // if(region === NCR) { return `${muniCity}` }
     // else return `${muniCity}`
@@ -20,7 +20,7 @@ function getDestination ({ region, province, muniCity }) {
   else { return `${muniCity}, ${province}` }
 }
 
-function getDestinationNCR ( muniCity ) { return muniCity }
+function formatDestinationNCR ( muniCity ) { return muniCity }
 
 function rangeInput(options = {}) {
   const {
@@ -218,7 +218,7 @@ export {
   formatNumber, 
   zeroIfNaN, 
   dashIfNaN, 
-  getDestination,
-  getDestinationNCR,
+  formatDestination,
+  formatDestinationNCR,
   rangeInput 
 }

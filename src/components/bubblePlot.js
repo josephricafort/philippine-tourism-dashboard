@@ -1,5 +1,5 @@
 import * as Plot from "npm:@observablehq/plot";
-import { formatNumber, dashIfNaN, getDestination } from "./utils.js"
+import { formatNumber, dashIfNaN, formatDestination } from "./utils.js"
 import * as d3 from "npm:d3";
 import { ALL_REGIONS, REGIONS_PROVINCE_TOTALS } from "./constants.js";
 
@@ -32,7 +32,7 @@ function bubblePlotTooltip({data, features}, selectRegion, options){
             geometry: d => d.geometry,
             sort: {channel: "-r"},
             channels: {
-                Destination: ({ id }) => getDestination({ 
+                Destination: ({ id }) => formatDestination({ 
                   region: dataPropsMap.get(id)?.region,
                   province: dataPropsMap.get(id)?.province,
                   muniCity: dataPropsMap.get(id)?.muniCity, 
