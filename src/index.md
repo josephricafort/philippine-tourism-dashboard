@@ -6,7 +6,7 @@ toc: false
 
 ```js
 import { op } from "npm:arquero"
-import { formatNumber, zeroIfNaN } from "./components/utils.js"
+import { formatNumber, zeroIfNaN, getTripAdvisorUrl } from "./components/utils.js"
 import { NCR, ALL_REGIONS, GREEN, RED } from "./components/constants.js"
 ```
 
@@ -287,7 +287,7 @@ const topDestinations = aq.from(phTourismFiltered)
   .derive({ sum: d => d.overseas ? d.domestic + d.foreign + d.overseas : d.domestic + d.foreign })
   .filter(d => d.sum > 0)
   .orderby(aq.desc("sum", "traveler"))
-  .slice(0, 10)
+  .slice(0, 50)
   .fold(["domestic", "foreign", "overseas"]).rename({ key: "traveler", value: "count" })
   .objects()
 
@@ -373,7 +373,12 @@ import { percDistChart } from "./components/distributionChart.js"
 
 ```js
 // All destinations table
-const searchPhTourism = Inputs.search(phTourismWide);
+const phTourismLinked = phTourismWide.map(({ muniCity, province, ...d }) => 
+      ({ linkedDestination: {
+          destination: muniCity !== province ? `${muniCity}, ${province}` : muniCity,
+          link: getTripAdvisorUrl({ muniCity, province })
+        }, muniCity, province, ...d })) // Add TripAdvisor url link
+const searchPhTourism = Inputs.search(phTourismLinked);
 const searchPhTourismValue = Generators.input(searchPhTourism);
 
 import { trendsTable, totalTrendsLine } from "./components/trendsTable.js"
@@ -407,7 +412,9 @@ const rangeTop = 10
         </div>
         <div class="card grid-colspan-2">
           <h4>Top Destinations in ${selectRegion} by Total</h4>
-          ${resize((width) => topDestBars({topDestinations}, {width}))}
+          <div class="top-dest-bars">
+            ${resize((width) => topDestBars({topDestinations}, {width}))}
+          </div>
           <p>For the totals, only the municipal value level were included while the provincial values were filtered out.</p>
         </div>
       </div>
@@ -458,10 +465,20 @@ const rangeTop = 10
   ${searchPhTourism}
   <br/>
   ${Inputs.table(
-    searchPhTourismValue, 
-    {columns: ["year", "muniCity", "province", "region", "id",  "total", "domestic", "foreign", "overseas"], 
-    header: {year: "Year", id: "PSGC 9-digit Code", region: "Region", province: "Province", muniCity: "Destination", 
-      total: "Total", domestic: "Domestic", foreign: "Foreign", overseas: "Overseas"}})}
+    searchPhTourismValue,
+    {
+      columns: [ "year", "linkedDestination", "region", "id",  "total", "domestic", "foreign", "overseas" ],
+      header: {
+        year: "Year", id: "PSGC 9-digit Code", region: "Region", total: "Total", 
+        domestic: "Domestic", foreign: "Foreign", overseas: "Overseas",
+        linkedDestination: "Destination"
+      },
+      format: {
+        linkedDestination: ({ destination, link }) => htl.html`<a href=${link} target="_blank">${destination}</a>`
+      },
+      layout: "auto"
+    }
+  )}
 </div>
 
 Contact me at josephricafort@gmail.com or see my works at [josephricafort.com](https://josephricafort.com)
@@ -476,11 +493,12 @@ Contact me at josephricafort@gmail.com or see my works at [josephricafort.com](h
   .table-container {
     width: 100%;
     height: 100%;
-    max-height: 250px;
+    max-height: 200px;
     overflow-y: auto;
 
     table {
       position: relative;
+      margin: 0;
 
       thead {
         position: sticky;
@@ -545,6 +563,11 @@ Contact me at josephricafort@gmail.com or see my works at [josephricafort.com](h
       background-color: black;
       border: 2px solid #333333;
     }
+  }
+
+  .top-dest-bars {
+    overflow-y: auto;
+    max-height: 200px;
   }
 
 

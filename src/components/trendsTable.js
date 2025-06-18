@@ -1,6 +1,6 @@
 import * as Plot from "npm:@observablehq/plot";
 import  { html } from "npm:htl";
-import { formatNumber, formatDestination, formatDestinationNCR } from "./utils.js";
+import { formatNumber, formatDestination, getTripAdvisorUrl } from "./utils.js";
 import { GREEN, RED } from "./constants.js"
 
 function trendsTable(data, {resize, selTraveler, rangeTop }) {
@@ -34,13 +34,17 @@ function trendsTable(data, {resize, selTraveler, rangeTop }) {
               .filter(d => d.traveler === selTraveler)
               // .slice(0, rangeTop)
               .map(({ region, province, muniCity, provMuniCity, traveler, year2019, year2021, year2023, percChange }) => html`<tr>
-                <td class="municity">${ formatDestination({ region, province, muniCity })}</td>
+                <td class="municity">
+                  <a href="${getTripAdvisorUrl({ province, muniCity })}" target="_blank" rel="noopener noreferrer">
+                    ${ formatDestination({ region, province, muniCity })}
+                  </a>
+                </td>
                 <td class="tourist-count">${year2019 > 0 ? formatNumber(year2019) : "-"}</td>
                 <td class="tourist-count">${!isNaN(year2021) ? formatNumber(year2021) : "-"}</td>
                 <td class="tourist-count">${formatNumber(year2023)}</td>
                 <td class="sparkline">${sparklineDest({ topDestChangeLong }, traveler, provMuniCity)}</td>
                 <td class="tourist-perc-change" style="${percChangeStyle(percChange)}">
-                    ${formatNumber(percChange)}%
+                    ${percChange > 0 ? "+" : ""}${formatNumber(percChange)}%
                 </td>
               </tr>`)}
           </tbody>

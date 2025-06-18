@@ -22,6 +22,13 @@ function formatDestination ({ region, province, muniCity }) {
 
 function formatDestinationNCR ( muniCity ) { return muniCity }
 
+const TRIP_ADVISOR_BASEURL = "https://www.tripadvisor.com/Search?q=" 
+const TRIP_ADVISOR_QUERY_SETTINGS = "&geo=1&ssrc=a&searchNearby=false"
+function formatPlace (place) { return place.replace(/ /g, "+") }
+function getTripAdvisorUrl({ province, muniCity }) {
+  return `${TRIP_ADVISOR_BASEURL}${formatPlace(muniCity)}%2C+${formatPlace(province)}${TRIP_ADVISOR_QUERY_SETTINGS}`;
+}
+
 function rangeInput(options = {}) {
   const {
     min = 0,
@@ -220,5 +227,6 @@ export {
   dashIfNaN, 
   formatDestination,
   formatDestinationNCR,
-  rangeInput 
+  rangeInput,
+  getTripAdvisorUrl
 }

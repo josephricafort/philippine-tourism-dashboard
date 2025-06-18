@@ -32,11 +32,14 @@ function bubblePlotTooltip({data, features}, selectRegion, options){
             geometry: d => d.geometry,
             sort: {channel: "-r"},
             channels: {
-                Destination: ({ id }) => formatDestination({ 
-                  region: dataPropsMap.get(id)?.region,
-                  province: dataPropsMap.get(id)?.province,
-                  muniCity: dataPropsMap.get(id)?.muniCity, 
-                }),
+                Destination: ({ id }) => {
+                  const formattedDest = formatDestination({ 
+                    region: dataPropsMap.get(id)?.region,
+                    province: dataPropsMap.get(id)?.province,
+                    muniCity: dataPropsMap.get(id)?.muniCity, 
+                  })
+                  return formattedDest
+                },
                 Total: ({ id }) => formatNumber(dataPropsMap.get(id)?.total),
                 Domestic: ({ id }) => formatNumber(dataPropsMap.get(id)?.domestic),
                 Foreign: ({ id }) => formatNumber(dataPropsMap.get(id)?.foreign),
