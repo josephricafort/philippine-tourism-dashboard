@@ -2,6 +2,7 @@ import * as Plot from "npm:@observablehq/plot";
 import { formatNumber, dashIfNaN, formatDestination } from "./utils.js"
 import * as d3 from "npm:d3";
 import { ALL_REGIONS, REGIONS_PROVINCE_TOTALS } from "./constants.js";
+import { html } from "npm:htl";
 
 function bubblePlot({data, features}, selTraveler, options){
     const dataPropsMap = new Map([...data]
@@ -38,7 +39,7 @@ function bubblePlotTooltip({data, features}, selectRegion, options){
                     province: dataPropsMap.get(id)?.province,
                     muniCity: dataPropsMap.get(id)?.muniCity, 
                   })
-                  return formattedDest
+                  return formattedDest // html`<a href=${"https://google.com"}>${formattedDest}</a>`
                 },
                 Total: ({ id }) => formatNumber(dataPropsMap.get(id)?.total),
                 Domestic: ({ id }) => formatNumber(dataPropsMap.get(id)?.domestic),

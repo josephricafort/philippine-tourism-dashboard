@@ -1,6 +1,6 @@
 import * as d3 from "npm:d3";
 
-import { NCR } from "./constants.js";
+import { PHILIPPINES } from "./constants.js";
 
 // Create a formatter function
 function formatNumber(n){ 
@@ -23,10 +23,16 @@ function formatDestination ({ region, province, muniCity }) {
 function formatDestinationNCR ( muniCity ) { return muniCity }
 
 const TRIP_ADVISOR_BASEURL = "https://www.tripadvisor.com/Search?q=" 
-const TRIP_ADVISOR_QUERY_SETTINGS = "&geo=1&ssrc=a&searchNearby=false"
+const TRIP_ADVISOR_QUERY_SETTINGS = "&geo=1&ssrc=A&searchNearby=false"
 function formatPlace (place) { return place.replace(/ /g, "+") }
 function getTripAdvisorUrl({ province, muniCity }) {
-  return `${TRIP_ADVISOR_BASEURL}${formatPlace(muniCity)}%2C+${formatPlace(province)}${TRIP_ADVISOR_QUERY_SETTINGS}`;
+  // If province is the same as muniCity, then we only use province
+  const dest = province !== muniCity ? `${formatPlace(muniCity)}%2C+${formatPlace(province)}` : formatPlace(province);
+  return `${TRIP_ADVISOR_BASEURL}${dest}%2C+${PHILIPPINES}${TRIP_ADVISOR_QUERY_SETTINGS}`;
+}
+
+function capFirstLetter(val) {
+    return String(val).charAt(0).toUpperCase() + String(val).slice(1);
 }
 
 function rangeInput(options = {}) {
@@ -228,5 +234,6 @@ export {
   formatDestination,
   formatDestinationNCR,
   rangeInput,
-  getTripAdvisorUrl
+  getTripAdvisorUrl,
+  capFirstLetter
 }

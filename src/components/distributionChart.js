@@ -21,6 +21,7 @@ function percDistChart({ topDestChangeLong }, traveler, { width } ) {
                         y: "count",
                         fill: d => +d.percChange > 0 ? GREEN : RED,
                         interval: 25, // selectRegion !== "All regions" ? 100 : 0
+                        tip: true
                     })),
             Plot.ruleY([0]),
             Plot.ruleX([0])

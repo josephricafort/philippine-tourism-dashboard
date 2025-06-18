@@ -6,7 +6,7 @@ toc: false
 
 ```js
 import { op } from "npm:arquero"
-import { formatNumber, zeroIfNaN, getTripAdvisorUrl } from "./components/utils.js"
+import { formatNumber, zeroIfNaN, getTripAdvisorUrl, capFirstLetter } from "./components/utils.js"
 import { NCR, ALL_REGIONS, GREEN, RED } from "./components/constants.js"
 ```
 
@@ -279,7 +279,7 @@ const subTotal = phTourismFiltered
   })
   .reduce((sum, d) => sum + +d.count, 0)
 
-import { totalBars, topDestBars } from "./components/barCharts.js"
+import { totalBars, topDestBars, barsTable } from "./components/barCharts.js"
 
 const topDestinations = aq.from(phTourismFiltered)
   .groupby("muniCity", "province")
@@ -397,52 +397,57 @@ const rangeTop = 10
 <div class="grid grid-cols-2">
   <div class="grid-colspan-1">
     <div class="card" style="margin-top: 0;">
-      <h4>Key Insights</h4>
+      <h2>Popular Destinations: Combined totals for ${checkboxYears.join(", ")}</h2>
+      <p>Find the most popular destinations</p>
       <div class="grid grid-cols-2">
-        <div>
-          ${checkboxYearsForm}
-        </div>
+        <div class=""> ${checkboxYearsForm} </div>
       </div>
       <div class="grid grid-cols-3">
         <div class="card grid-colspan-1">
-          <h4>Total and Breakdown of Tourists in ${selectRegion}</h4>
           <p><span class="key-value">${formatNumber(subTotal)} </span>Travelers</p>
+          <p>have visited <span style="font-weight: 700;">${selectRegion}</span> in ${checkboxYears.join(", ")}</p>
           ${resize((width) => totalBars({phTourismFiltered}, {width}))}
           <br />
         </div>
         <div class="card grid-colspan-2">
-          <h4>Top Destinations in ${selectRegion} by Total</h4>
-          <div class="top-dest-bars">
-            ${resize((width) => topDestBars({topDestinations}, {width}))}
+          <h4>Most Popular Destinations in ${selectRegion}</h4>
+          <div class="">
+            ${barsTable({ topDestinationsWide, topDestinations }, { resize, region: selectRegion, years: checkboxYears })}
           </div>
-          <p>For the totals, only the municipal value level were included while the provincial values were filtered out.</p>
         </div>
+      </div>
+      <div>
+        <p>For the totals, only the municipal value level were included while the provincial values were filtered out.</p>
       </div>
     </div>
     <div class="card trending-destinations">
-      <h4>Trending Destinations between 2019 and 2023 in ${selectRegion}</h4>
+      <h2>Trending Destinations between 2019 and 2023</h2>
+      <p>Be the first to discover those trending destinations before they get too crowded!</p>
       ${view(radiosTravelerForm)}
       <div class="grid grid-cols-3">
         <div class="card grid-colspan-1" style="padding-right: 10px;">
-          <h4>Overall Trend for ${selectRegion}</h4>
-          <p><span class="key-value">${styledKeyValue(percChangeOverall)}</span> Travelers</p>
+          <p>${radiosTraveler === "total" ? "All" : capFirstLetter(radiosTraveler)} travelers to 
+            <span style="font-weight: 700;">${selectRegion}</span> has 
+            <span>${styledKeyValue(percChange > 0 ? "increased" : "dropped")}</span> by</p>
+          <p><span class="key-value">${styledKeyValue(percChangeOverall)}</span></p>
           ${resize((width) => totalTrendsLine({ topDestChangeLong }, selectRegion, radiosTraveler, { width } ))}
         </div>
         <div class="card grid-colspan-2">
-          <h4>Distribution of Destination Trends</h4>
-          ${resize((width) => percDistChart({ topDestChangeLong }, radiosTraveler, { width } ))}
-          <p>The more greens you see, the more arrivals in destinations. The more reds, the more decrease in destinations.</p>
+          <h4>Most Trending Destinations in ${selectRegion}</h4>
+          ${trendsTable(trendsTableData, { resize, selTraveler: radiosTraveler, rangeTop })}
         </div>
       </div>
-      <div class="card">
-        ${trendsTable(trendsTableData, { resize, selTraveler: radiosTraveler, rangeTop })}
+      <div class="card grid-colspan-1">
+        <h4>Distribution on the number of Destination and its equivalent percent change</h4>
+        ${resize((width) => percDistChart({ topDestChangeLong }, radiosTraveler, { width } ))}
+        <p>The more greens you see, the more arrivals in destinations. The more reds, the more decrease in destinations.</p>
       </div>
     </div>
   </div>  
   <div class="grid-colspan-1">
     <div class="card">
-      <h4>Distribution of tourists across ${selectRegion}</h4>
-      <p>Hover over the circles to see tourist counts.</p>
+      <h2>Map of destinations travelers go in ${selectRegion}</h2>
+      <p>The sizes of the circles shows how many travelers have visited the destination. Hover over the circles to see travelers count for every destination.</p>
       <div class="map-ph">
         ${resize((width) => mapPh({width}))}
         ${selectRegion !== ALL_REGIONS ? htl.html`<div class="map-inset-ph">${mapInsetPh()}</div>` : ""}
@@ -483,22 +488,26 @@ const rangeTop = 10
 
 Contact me at josephricafort@gmail.com or see my works at [josephricafort.com](https://josephricafort.com)
 
-<!-- Data: Jonathan C. McDowell, [General Catalog of Artificial Space Objects](https://planet4589.org/space/gcat) -->
-
 <style lang="scss">
-  h1, p {
+  h1, h2, h3, h4, h5, p {
     max-width: 100%;
+  }
+
+  h2 { 
+    font-size: 1rem !important;
+    font-weight: 800 !important;
   }
 
   .table-container {
     width: 100%;
     height: 100%;
-    max-height: 200px;
+    max-height: 250px;
     overflow-y: auto;
 
     table {
       position: relative;
       margin: 0;
+      table-layout: auto;
 
       thead {
         position: sticky;
@@ -568,6 +577,10 @@ Contact me at josephricafort@gmail.com or see my works at [josephricafort.com](h
   .top-dest-bars {
     overflow-y: auto;
     max-height: 200px;
+  }
+
+  .note {
+    font-size: 12px;
   }
 
 

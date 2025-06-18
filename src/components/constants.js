@@ -1,5 +1,6 @@
 const NCR = "National Capital Region (NCR)"
 const ALL_REGIONS = "All regions"
+const PHILIPPINES = "Philippines"
 
 const REGIONS_PROVINCE_TOTALS = ["Region III (Central Luzon)",
                         "Region IX (Zamboanga Peninsula)",
@@ -18,4 +19,4 @@ const nirProvinces = [
   { province: "Siquijor", newId: "1861" }
 ]
 
-export { NCR, ALL_REGIONS, REGIONS_PROVINCE_TOTALS, GREEN, RED }
+export { NCR, ALL_REGIONS, REGIONS_PROVINCE_TOTALS, GREEN, RED, PHILIPPINES }

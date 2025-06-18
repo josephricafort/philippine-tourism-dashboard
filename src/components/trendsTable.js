@@ -21,6 +21,7 @@ function trendsTable(data, {resize, selTraveler, rangeTop }) {
         <table style="max-width: ${width}px;">
           <thead>
             <tr>
+              <th class="rank"></th>
               <th class="municity">Destination</th>
               <th class="tourist-count">2019</th>
               <th class="tourist-count">2021</th>
@@ -33,7 +34,8 @@ function trendsTable(data, {resize, selTraveler, rangeTop }) {
             ${topDestinationsChange
               .filter(d => d.traveler === selTraveler)
               // .slice(0, rangeTop)
-              .map(({ region, province, muniCity, provMuniCity, traveler, year2019, year2021, year2023, percChange }) => html`<tr>
+              .map(({ region, province, muniCity, provMuniCity, traveler, year2019, year2021, year2023, percChange }, i) => html`<tr>
+                <td class="rank">${i + 1}</td>
                 <td class="municity">
                   <a href="${getTripAdvisorUrl({ province, muniCity })}" target="_blank" rel="noopener noreferrer">
                     ${ formatDestination({ region, province, muniCity })}
@@ -122,7 +124,13 @@ function totalTrendsLine({ topDestChangeLong }, selRegion, selTraveler, { width}
         { x: d => new Date(+d.year, 0, 1), 
          y: "count",
          stroke: percChange > 0 ? GREEN : RED,
-         strokeWidth: 3
+         strokeWidth: 3,
+         channels: {
+          x: "Year"
+         },
+         tip: {
+          format: { x: false },
+         }
       })),
       Plot.areaY(dataRegion, Plot.binX(
         { y: "sum" }, 
