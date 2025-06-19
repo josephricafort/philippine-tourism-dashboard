@@ -400,7 +400,7 @@ const rangeTop = 10
 <div class="grid grid-cols-1 header-container">
   <div class="grid-rowspan-1 header">
     <h1>🇵🇭 Where Do Most Travelers Go in the Philippines? 🏖️</h1>
-    <p>Explore the most popular and trending travel destinations in the Philippines with data. Know which destinations where proven to be top favorites for locals and foreign travelers. See the breakdown of trends across different regions. Clicking the destination leads you to TripAdvisor's suggestions of "Things to do".</p>
+    <p>Explore the most popular and trending travel destinations in the Philippines using data. Know which destinations where proven to be top favorites for locals and foreign travelers. See the breakdown of trends across different regions. Clicking the destination leads you to TripAdvisor's suggestions of "Things to do".</p>
     <div class="select-region-form">${selectRegionForm}</div>
   </div>
 </div>
@@ -598,9 +598,8 @@ For any feedbacks, suggestions or opportunities for collaboration, please send a
       /* border: 2px solid #333333; */
 
       svg {
-        filter: drop-shadow(0 4px 16px #111111ee);
+        filter: drop-shadow(0 0px 16px #000000);
       }
-
     }
   }
 

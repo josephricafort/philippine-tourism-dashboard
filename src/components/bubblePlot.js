@@ -44,7 +44,7 @@ function bubblePlotTooltip({data, features}, selectRegion, options){
                 Total: ({ id }) => formatNumber(dataPropsMap.get(id)?.total),
                 Domestic: ({ id }) => formatNumber(dataPropsMap.get(id)?.domestic),
                 Foreign: ({ id }) => formatNumber(dataPropsMap.get(id)?.foreign),
-                Overseas: ({ id }) => dashIfNaN(formatNumber(dataPropsMap.get(id)?.overseas)),
+                // Overseas: ({ id }) => formatNumber(dataPropsMap.get(id)?.overseas),
             },
             tip: {
               format: { r: false }
