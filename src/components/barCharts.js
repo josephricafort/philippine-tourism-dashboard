@@ -5,22 +5,12 @@ import  { html } from "npm:htl";
 import * as d3 from "npm:d3";
 
 function totalBars(data, { width, height }){
-    const { phTourismFiltered } = data;
-
-    // Filter out provincial data and only keep municipal data
-    // Keep only those that are in NCR
-    const dataFiltered = phTourismFiltered.filter(d => {
-      if(d.province === d.muniCity) {
-        if (d.region === NCR) { return true }
-        else return false
-      }
-      else return true
-    });
+    const { phTourismBars } = data;
 
   return Plot.plot({
     y: { axis: null },
     marks: [
-      Plot.barX(dataFiltered, Plot.groupY(
+      Plot.barX(phTourismBars, Plot.groupY(
         {x: "sum"}, 
         {x: "count", 
           y: "", 

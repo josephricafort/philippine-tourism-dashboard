@@ -8,6 +8,12 @@ toc: false
 import { op } from "npm:arquero"
 import { formatNumber, zeroIfNaN, getTripAdvisorUrl, capFirstLetter } from "./components/utils.js"
 import { NCR, ALL_REGIONS, GREEN, RED } from "./components/constants.js"
+
+import { bubblePlot, bubblePlotTooltip, radiusLegend } from "./components/bubblePlot.js"
+import { legendSpike } from "./data/utils.js"
+import { totalBars, topDestBars, barsTable } from "./components/barCharts.js"
+import { percDistChart } from "./components/distributionChart.js"
+import { trendsTable, totalTrendsLine } from "./components/trendsTable.js"
 ```
 
 ```js
@@ -33,18 +39,16 @@ const regions = [...new Set(phTourismLong.map(d => d.region))]
 ```
 
 ```js 
-const phTourismFiltered = phTourismLong
-  .filter(d => 
-    checkboxYears.includes(String(d.year)) &&
+const phTourismFiltered = aq.from(phTourismLong)
+  .filter(aq.escape(d => 
+    checkboxYears.includes(d.year) &&
     (selectRegion === ALL_REGIONS ? true : selectRegion === d.region)
-    )
-
-function filterbyRegion(data){
-  return data.filter(d => 
-    checkboxYears.includes(String(d.year)) &&
-    (selectRegion === ALL_REGIONS ? true : selectRegion === d.region)
-  )
-}
+    ))
+  // Add together within the same traveler, muniCity and province
+  .groupby("id", "region", "muniCity", "province", "traveler")
+  .rollup({ count: op.sum("count") })
+  .ungroup()
+  .objects()
 ```
 
 <!-- PHILIPPINE BUBBLE MAP -->
@@ -101,8 +105,6 @@ const regCenterZoom = FileAttachment("./data/regional-center-zoom.csv").csv({ ty
 
 ```js
 // Philippine Map
-import { bubblePlot, bubblePlotTooltip, radiusLegend } from "./components/bubblePlot.js"
-import { legendSpike } from "./data/utils.js"
 const phInset = FileAttachment("./data/phInset.json").json({ typed: true })
 const phRegionsFile = FileAttachment("./data/regions_nir.json").json({ typed: true })
 ```
@@ -258,43 +260,46 @@ function mapPh({width, height}) {
 const cbValues = ["2019", "2021", "2023"]
 const checkboxYearsForm = Inputs.checkbox(cbValues, {label: "Filter by year/s", value: cbValues })
 const checkboxYears = view(checkboxYearsForm)
-// // Disable unticking checkbox when only one remaining variable is available to 
-// // prevent unselecting them at the current instance
 
 // const checkboxesTravelers = view(Inputs.checkbox(["foreign", "overseas", "domestic"], {label: "Select travelers", value: ["foreign"]}))
-const selectRegionForm = Inputs.select([ALL_REGIONS, ...regions], {label: "Filter region"})
+const selectRegionForm = Inputs.select([ALL_REGIONS, ...regions], {label: "Select region"})
 const selectRegion = view(selectRegionForm)
+
+const toggleDistChartForm = Inputs.toggle({ label: "Show how the percentage values are distributed", value: false })
+const toggleDistChart = view(toggleDistChartForm)
 ```
 
 ```js
 // Bar charts
-const subTotal = phTourismFiltered
-  .filter(d => {
+const phTourismBars = phTourismFiltered
+    .filter(d => {
     // Filter out provinces but not NCR cities
     if(!isNaN(d.count)){
-      if(d.province != d.muniCity) return true
-      else if(d.region == NCR) return true
-      else false
-    } 
+      if(d.province != d.muniCity) { return true }
+      else if(d.region == NCR) { return true }
+      else { return false }
+    } else { return false }
   })
+
+const subTotal = phTourismBars
   .reduce((sum, d) => sum + +d.count, 0)
 
-import { totalBars, topDestBars, barsTable } from "./components/barCharts.js"
-
-const topDestinations = aq.from(phTourismFiltered)
+const topDestinationsWide = aq.from(phTourismFiltered)
+  // // Add together within the same traveler, muniCity and province
+  // .groupby("traveler", "muniCity", "province")
+  // .rollup({ count: op.sum("count") })
   .groupby("muniCity", "province")
   .pivot("traveler", "count")
-  .derive({ sum: d => d.overseas ? d.domestic + d.foreign + d.overseas : d.domestic + d.foreign })
-  .filter(d => d.sum > 0)
-  .orderby(aq.desc("sum", "traveler"))
+  .ungroup()
+  .derive({ total: aq.escape(d => zeroIfNaN(d.domestic) + zeroIfNaN(d.foreign) + zeroIfNaN(d.overseas)) })
+  // .filter(d => d.total > 0)
+  .orderby(aq.desc("total", "traveler")) 
   .slice(0, 50)
-  .fold(["domestic", "foreign", "overseas"]).rename({ key: "traveler", value: "count" })
   .objects()
 
-const topDestinationsWide = aq.from(topDestinations)
+const topDestinations = aq.from(topDestinationsWide)
+  .fold(["domestic", "foreign", "overseas"]).rename({ key: "traveler", value: "count" })
   .groupby("muniCity", "province")
-  .pivot("traveler", "count")
-  .derive({ total: aq.escape(d => zeroIfNaN(d.domestic) + zeroIfNaN(d.foreign) + zeroIfNaN(d.overseas)) })
   .objects()
 ```
 
@@ -340,8 +345,6 @@ const topDestChangeLong = aq.from(topDestinationsChange)
   .rename({ key: "year", value: "count" })
   .derive({ year: aq.escape(d => d.year.replaceAll("year", "")) })
   .objects()
-
-console.log("topDestChangeLong: ", topDestChangeLong)
 ```
 
 ```js
@@ -357,9 +360,7 @@ const [startCount, endCount] = dataDestChangeRegion.reduce((sumArr, d) => {
   } else return sumArr
 }, [0, 0])
 
-const percChange = (endCount - startCount) / startCount
-console.log("percChange: ", percChange)
-
+const percChange = (endCount - startCount) / startCount;
 const percChangeOverall = `${percChange > 0 ? "+" : ""}${d3.format(".2s")(percChange * 100)}%`
 
 const styledKeyValue = (child) => htl.html`
@@ -368,7 +369,18 @@ const styledKeyValue = (child) => htl.html`
 ```
 
 ```js
-import { percDistChart } from "./components/distributionChart.js"
+const percIncDecData =  dataDestChangeRegion
+  .reduce(({ countInc, countDec }, { percChange }) => {
+    return { 
+      countInc: percChange > 0 ? countInc + 1 : countInc, 
+      countDec: percChange < 0 ? countDec + 1 : countDec
+    }
+  }, { countInc: 0, countDec: 0 })
+const { countInc, countDec } = percIncDecData
+const percInc = formatNumber((countInc / (countInc + countDec)) * 100)
+const percDec = formatNumber((countDec / (countInc + countDec)) * 100)
+
+console.log("percIncDecData: ", percIncDecData)
 ```
 
 ```js
@@ -381,16 +393,14 @@ const phTourismLinked = phTourismWide.map(({ muniCity, province, ...d }) =>
 const searchPhTourism = Inputs.search(phTourismLinked);
 const searchPhTourismValue = Generators.input(searchPhTourism);
 
-import { trendsTable, totalTrendsLine } from "./components/trendsTable.js"
-
 const trendsTableData = { topDestinationsChange, topDestChangeLong }
 const rangeTop = 10
 ```
 
-<div class="grid grid-cols-1">
+<div class="grid grid-cols-1 header-container">
   <div class="grid-rowspan-1 header">
-    <h1>🇵🇭 Where Do Most Tourists Go in the Philippines? 🏖️</h1>
-    <p>Explore the most popular and trending travel destinations in the Philippines through data. Know which destinations where proven to be popular even in the past and hidden gems that will soon to become a tourist hotspot. See the breakdown for across different regions.</p>
+    <h1>🇵🇭 Where Do Most Travelers Go in the Philippines? 🏖️</h1>
+    <p>Explore the most popular and trending travel destinations in the Philippines with data. Know which destinations where proven to be top favorites for locals and foreign travelers. See the breakdown of trends across different regions. Clicking the destination leads you to TripAdvisor's suggestions of "Things to do".</p>
     <div class="select-region-form">${selectRegionForm}</div>
   </div>
 </div>
@@ -398,15 +408,15 @@ const rangeTop = 10
   <div class="grid-colspan-1">
     <div class="card">
       <h2>🌟 Popular Destinations</h2>
-      <p>Find the most popular destinations with data combining totals across years ${checkboxYears.join(", ")}</p>
+      <p>Know the most popular destinations sorted based from the most traveler counts combined across selected years: ${checkboxYears.join(", ")}.</p>
       <div class="grid grid-cols-2">
         <div class=""> ${checkboxYearsForm} </div>
       </div>
       <div class="grid grid-cols-3">
         <div class="card grid-colspan-1">
-          <p><span class="key-value">${formatNumber(subTotal)} </span>Travelers</p>
-          <p>have visited <span style="font-weight: 700;">${selectRegion}</span> in ${checkboxYears.join(", ")}</p>
-          ${resize((width) => totalBars({phTourismFiltered}, {width}))}
+          <p><span class="key-value">${formatNumber(subTotal)} </span>visits</p>
+          <p>in <span style="font-weight: 700;">${selectRegion}</span> in year/s ${checkboxYears.join(", ")}</p>
+          ${resize((width) => totalBars({ phTourismBars }, {width}))}
           <br />
         </div>
         <div class="card grid-colspan-2">
@@ -422,13 +432,13 @@ const rangeTop = 10
     </div>
     <div class="card trending-destinations">
       <h2>📈 Trending Destinations between 2019 and 2023</h2>
-      <p>Be the first to discover those trending destinations before they get too crowded!</p>
+      <p>Be the first to discover trending destinations before they get too crowded. See which destinations show significant drop in visitor numbers.</p>
       ${view(radiosTravelerForm)}
       <div class="grid grid-cols-3">
         <div class="card grid-colspan-1" style="padding-right: 10px;">
-          <p>${radiosTraveler === "total" ? "All" : capFirstLetter(radiosTraveler)} travelers to 
-            <span style="font-weight: 700;">${selectRegion}</span> has 
-            <span>${styledKeyValue(percChange > 0 ? "increased" : "dropped")}</span> by</p>
+          <p>The number of ${radiosTraveler === "total" ? "All" : capFirstLetter(radiosTraveler)} travelers to 
+            <span style="font-weight: 700;">${selectRegion}</span> have 
+            <span>${styledKeyValue(percChange > 0 ? "increased" : "decreased")}</span> by</p>
           <p><span class="key-value">${styledKeyValue(percChangeOverall)}</span></p>
           ${resize((width) => totalTrendsLine({ topDestChangeLong }, selectRegion, radiosTraveler, { width } ))}
         </div>
@@ -437,11 +447,15 @@ const rangeTop = 10
           ${trendsTable(trendsTableData, { resize, selTraveler: radiosTraveler, rangeTop })}
         </div>
       </div>
-      <div class="card grid-colspan-1">
-        <h4>Distribution on the number of Destination and its equivalent percent change</h4>
-        ${resize((width) => percDistChart({ topDestChangeLong }, radiosTraveler, { width } ))}
-        <p>The more greens you see, the more arrivals in destinations. The more reds, the more decrease in destinations.</p>
-      </div>
+      <div class="toggle-dist-chart">${toggleDistChartForm}</div>
+      ${toggleDistChart ? html`
+        <div class="card grid-colspan-1">
+          <h4>In ${selectRegion}, <span class="val-increase">${percInc}%</span> of the destinations have <span class="val-increase">increased</span> in number of travelers while <span class="val-decrease">${percDec}%</span> have seen a <span class="val-decrease">decline</span>.</h4>
+          The distribution below shows by how much increase or decrease in travelers these destinations had.
+          <br/><br/>
+          ${resize((width) => percDistChart({ topDestChangeLong }, radiosTraveler, { width } ))}
+        </div>
+      ` : ""}
     </div>
   </div>  
   <div class="grid-colspan-1">
@@ -454,19 +468,21 @@ const rangeTop = 10
       </div>
     </div>
     <div class="card notes">
-      <h4>Notes</h4>
+      <h4>Notes on the Data</h4>
       <ul>
         <li>While majority of the provinces have data up to the municipal level, some regions only have up to provincial level data.</li>
         <li>Bangsamoro region was not included due to significantly insufficient data</li>
         <li>Municipal data may or may not sum up to Provincial data</li>
         <li>Some destinations like Boracay (Malay, Aklan), Siargao Island (Gen. Luna, Surigao del Norte) and Clark (Angeles City) were encoded in their municipal level data to keep in standard with the released Philippine Standard Geographic Code and joining multiple data would be easier.</li>
       </ul>
+      <h4>Data Source</h4>
+      <p>Department of Tourism</p>
     </div>
   </div>
 </div>
 <div class="card">
   <h2>All Destinations</h2>
-  <p>Here's a complete list of all the Philippine destinations with all the values. Every destination links to an external site TripAdvisor. This way, you may check what activities or attractions make travelers visit the destination.</p>
+  <p>Here's a complete list of all the Philippine destinations with all the traveler counts. The link to every destination leads to an external site TripAdvisor. This way, you may check what activities or attractions are available to the destination.</p>
   <br/>
   ${searchPhTourism}
   <br/>
@@ -487,7 +503,7 @@ const rangeTop = 10
   )}
 </div>
 
-Contact me at josephricafort@gmail.com or see my works at [josephricafort.com](https://josephricafort.com)
+For any feedbacks, suggestions or opportunities for collaboration, please send an email at [josephricafort@gmail.com](mailto:josephricafort@gmail.com). Feel free to look at my previous works at [josephricafort.com](https://josephricafort.com)
 
 <style lang="scss">
   h1, h2, h3, h4, h5, p {
@@ -550,12 +566,20 @@ Contact me at josephricafort@gmail.com or see my works at [josephricafort.com](h
     font-size: 2rem;
   }
 
-  .header {
-    .select-region-form {
-      form {
-        select {
-          padding: 5px;
-          font-weight: 700;
+  .header-container {
+    /* position: sticky !important;
+    top: 20px;
+    background: black;
+    z-index: 50; */
+
+    .header {
+
+      .select-region-form {
+        form {
+          select {
+            padding: 5px;
+            font-weight: 700;
+          }
         }
       }
     }
@@ -567,11 +591,16 @@ Contact me at josephricafort@gmail.com or see my works at [josephricafort.com](h
     
     .map-inset-ph {
       position: absolute;
-      top: 25px;
-      left: 25px;
+      top: 15px;
+      left: 15px;
       z-index: 10;
-      background-color: black;
-      border: 2px solid #333333;
+      /* background-color: black; */
+      /* border: 2px solid #333333; */
+
+      svg {
+        filter: drop-shadow(0 4px 16px #111111ee);
+      }
+
     }
   }
 
@@ -583,6 +612,18 @@ Contact me at josephricafort@gmail.com or see my works at [josephricafort.com](h
   .note {
     font-size: 12px;
   }
+
+  .toggle-dist-chart {
+    form {
+      label {
+        max-width: 300px;
+        width: 100%;
+      }
+    }
+  }
+
+  .val-increase { color: #3ca952 }
+  .val-decrease { color: #e45756 }
 
 
 </style>

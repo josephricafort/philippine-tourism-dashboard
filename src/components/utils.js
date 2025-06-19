@@ -7,9 +7,9 @@ function formatNumber(n){
   return d3.format(".2s")(n)
 }
 
-function zeroIfNaN (num) { return !isNaN(num) ? num : 0 }
+function zeroIfNaN (num) { return Boolean(num) ? num : 0 }
 
-function dashIfNaN (num) { return !isNaN(num) ? num : "-" }
+function dashIfNaN (num) { return Boolean(num) ? num : "-" }
 
 function formatDestination ({ region, province, muniCity }) {
   if (province == muniCity) { 
