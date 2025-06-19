@@ -256,13 +256,13 @@ function mapPh({width, height}) {
 ```js
 // Inputs and checkboxes
 const cbValues = ["2019", "2021", "2023"]
-const checkboxYearsForm = Inputs.checkbox(cbValues, {label: "Select year/s", value: cbValues })
+const checkboxYearsForm = Inputs.checkbox(cbValues, {label: "Filter by year/s", value: cbValues })
 const checkboxYears = view(checkboxYearsForm)
 // // Disable unticking checkbox when only one remaining variable is available to 
 // // prevent unselecting them at the current instance
 
 // const checkboxesTravelers = view(Inputs.checkbox(["foreign", "overseas", "domestic"], {label: "Select travelers", value: ["foreign"]}))
-const selectRegionForm = Inputs.select([ALL_REGIONS, ...regions], {label: "Select region"})
+const selectRegionForm = Inputs.select([ALL_REGIONS, ...regions], {label: "Filter region"})
 const selectRegion = view(selectRegionForm)
 ```
 
@@ -300,7 +300,7 @@ const topDestinationsWide = aq.from(topDestinations)
 
 ```js
 // Trends table, Percent change
-const radiosTravelerForm = Inputs.radio(["total", "domestic", "foreign"], {label: "Select traveler", value: "total"})
+const radiosTravelerForm = Inputs.radio(["total", "domestic", "foreign"], {label: "Filter by traveler", value: "total"})
 const radiosTraveler = view(radiosTravelerForm)
 
 const topDestinationsChange = aq.from(phTourismLong)
@@ -389,16 +389,16 @@ const rangeTop = 10
 
 <div class="grid grid-cols-1">
   <div class="grid-rowspan-1 header">
-    <h1>🇵🇭 Where Did All Tourists Go? 🏖️</h1>
-    <p>Explore the most popular and trending travel destinations in the Philippines. Source: Department of Tourism.</p>
+    <h1>🇵🇭 Where Do Most Tourists Go in the Philippines? 🏖️</h1>
+    <p>Explore the most popular and trending travel destinations in the Philippines through data. Know which destinations where proven to be popular even in the past and hidden gems that will soon to become a tourist hotspot. See the breakdown for across different regions.</p>
     <div class="select-region-form">${selectRegionForm}</div>
   </div>
 </div>
 <div class="grid grid-cols-2">
   <div class="grid-colspan-1">
-    <div class="card" style="margin-top: 0;">
-      <h2>Popular Destinations: Combined totals for ${checkboxYears.join(", ")}</h2>
-      <p>Find the most popular destinations</p>
+    <div class="card">
+      <h2>🌟 Popular Destinations</h2>
+      <p>Find the most popular destinations with data combining totals across years ${checkboxYears.join(", ")}</p>
       <div class="grid grid-cols-2">
         <div class=""> ${checkboxYearsForm} </div>
       </div>
@@ -421,7 +421,7 @@ const rangeTop = 10
       </div>
     </div>
     <div class="card trending-destinations">
-      <h2>Trending Destinations between 2019 and 2023</h2>
+      <h2>📈 Trending Destinations between 2019 and 2023</h2>
       <p>Be the first to discover those trending destinations before they get too crowded!</p>
       ${view(radiosTravelerForm)}
       <div class="grid grid-cols-3">
@@ -446,7 +446,7 @@ const rangeTop = 10
   </div>  
   <div class="grid-colspan-1">
     <div class="card">
-      <h2>Map of destinations travelers go in ${selectRegion}</h2>
+      <h2>🗺️ Map of destinations travelers go in ${selectRegion}</h2>
       <p>The sizes of the circles shows how many travelers have visited the destination. Hover over the circles to see travelers count for every destination.</p>
       <div class="map-ph">
         ${resize((width) => mapPh({width}))}
@@ -466,6 +466,7 @@ const rangeTop = 10
 </div>
 <div class="card">
   <h2>All Destinations</h2>
+  <p>Here's a complete list of all the Philippine destinations with all the values. Every destination links to an external site TripAdvisor. This way, you may check what activities or attractions make travelers visit the destination.</p>
   <br/>
   ${searchPhTourism}
   <br/>

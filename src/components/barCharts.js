@@ -27,7 +27,9 @@ function totalBars(data, { width, height }){
           fill: "traveler", 
           sort: {y: "x", reverse: true }, 
           tickFormat: ".2s", 
-          tip: { format: { y: false } } 
+          tip: { 
+            format: { y: false },
+          } 
         })),
         Plot.axisX({
             anchor: "top",
@@ -110,7 +112,8 @@ function miniStackedBars(data, { province, muniCity, total, maxVal }) {
               sort: { y: "x", reverse: true },
               tickFormat: ".0s",
               tip: {
-                format: { y: false }
+                format: { y: false },
+                anchor: "right"
               }
             }
           )
