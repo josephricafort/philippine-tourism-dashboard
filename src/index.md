@@ -7,7 +7,7 @@ toc: false
 ```js
 import { op } from "npm:arquero"
 import { formatNumber, zeroIfNaN, getTripAdvisorUrl, capFirstLetter } from "./components/utils.js"
-import { NCR, ALL_REGIONS, GREEN, RED } from "./components/constants.js"
+import { NCR, ALL_REGIONS, GREEN, RED, MOBILE_BREAKPOINT } from "./components/constants.js"
 
 import { bubblePlot, bubblePlotTooltip, radiusLegend } from "./components/bubblePlot.js"
 import { legendSpike } from "./data/utils.js"
@@ -381,7 +381,6 @@ const { countInc, countDec } = percIncDecData
 const percInc = formatNumber((countInc / (countInc + countDec)) * 100)
 const percDec = formatNumber((countDec / (countInc + countDec)) * 100)
 
-console.log("percIncDecData: ", percIncDecData)
 ```
 
 ```js
@@ -397,111 +396,108 @@ const searchPhTourismValue = Generators.input(searchPhTourism);
 const trendsTableData = { topDestinationsChange, topDestChangeLong }
 const rangeTop = 10
 ```
-
-<div class="grid grid-cols-1 header-container">
-  <div class="grid-rowspan-1 header">
-    <h1>🏖️ Where Do Travelers Go in the Philippines? 🇵🇭</h1>
-    <p>Discover the Philippines' most visited and trending destinations—backed by data! See where local and foreign travelers love to go, explore regional patterns, and uncover hidden gems. Click any location to view TripAdvisor's top “Things to Do” and start planning your adventure.</p>
-    <div class="select-region-form">${selectRegionForm}</div>
+<div class="main grid-cols-1">
+  <div class="grid grid-colspan-1 grid-cols-1 header-container">
+    <div class="header">
+      <h1>🏖️ Where Do Travelers Go in the Philippines? 🇵🇭</h1>
+      <p>Discover the Philippines' most visited and trending destinations—backed by data! See where local and foreign travelers love to go, explore regional patterns, and uncover hidden gems. Click any location to view TripAdvisor's top “Things to Do” and start planning your adventure.</p>
+      <div class="select-region-form">${selectRegionForm}</div>
+    </div>
   </div>
-</div>
-<div class="grid grid-cols-2">
-  <div class="grid-colspan-1">
-    <div class="card">
+  <div class="grid grid-cols-2" style="grid-auto-rows: auto;">
+    <div class="card travel-hotspots">
       <h2>🌟 Top Travel Hotspots</h2>
       <p>Explore the most visited destinations based on traveler numbers across the selected years: ${checkboxYears.join(", ")}.</p>
-      <div class="grid grid-cols-2">
+      <div class="checkbox-years">
         <div class=""> ${checkboxYearsForm} </div>
       </div>
-      <div class="grid grid-cols-3">
-        <div class="card grid-colspan-1">
+      <div class="grid grid-cols-3 travel-hotspots-charts">
+        <div class="card grid-colspan-1 overall">
           <p><span class="key-value">${formatNumber(subTotal)} </span>visits</p>
           <p>in <span style="font-weight: 700;">${selectRegion}</span> during ${checkboxYears.join(", ")}</p>
           ${resize((width) => totalBars({ phTourismBars }, {width}))}
           <br />
         </div>
-        <div class="card grid-colspan-2">
+        <div class="card grid-colspan-2 most-visited-table">
           <h4>Most Visited Spots in ${selectRegion}</h4>
           <div class="">
             ${barsTable({ topDestinationsWide, topDestinations }, { resize, region: selectRegion, years: checkboxYears })}
           </div>
         </div>
       </div>
-      <div>
-        <p>Note: Only municipal-level data was included in the totals. Provincial rollups were excluded to avoid duplication.</p>
+      <div class="notes">
+        <p>Only municipal-level data was included in the totals. Provincial rollups were excluded to avoid duplication.</p>
+      </div>
+    </div>
+    <div class="card grid-rowspan-2 map">
+      <h2>🗺️ Interactive Travel Map: ${selectRegion}</h2>
+      <p>Each circle represents a destination—the bigger the circle, the more visitors it had. Hover to see exact traveler counts for each spot.</p>
+      <div class="map-ph">
+        ${resize((width) => mapPh({width}))}
+        <div class="map-inset-ph">${selectRegion !== "All regions" ? mapInsetPh() : ""}</div>
       </div>
     </div>
     <div class="card trending-destinations">
       <h2>📈 Trending Destinations (2019–2023)</h2>
       <p>Find out which places are gaining popularity—or dropping off the radar. Spot rising stars before everyone else does!</p>
       ${view(radiosTravelerForm)}
-      <div class="grid grid-cols-3">
-        <div class="card grid-colspan-1" style="padding-right: 10px;">
+      <div class="grid grid-cols-3 trending-destinations-charts">
+        <div class="card grid-colspan-1 overall-trend">
           <p>${radiosTraveler === "total" ? "All" : capFirstLetter(radiosTraveler)} travelers to 
             <span style="font-weight: 700;">${selectRegion}</span> have 
             <span>${styledKeyValue(percChange > 0 ? "increased" : "decreased")}</span> by</p>
           <p><span class="key-value">${styledKeyValue(percChangeOverall)}</span></p>
           ${resize((width) => totalTrendsLine({ topDestChangeLong }, selectRegion, radiosTraveler, { width } ))}
         </div>
-        <div class="card grid-colspan-2">
+        <div class="card grid-colspan-2 trending-destinations-table">
           <h4>Top Trending Places in ${selectRegion}</h4>
           ${trendsTable(trendsTableData, { resize, selTraveler: radiosTraveler, rangeTop })}
         </div>
       </div>
       <div class="toggle-dist-chart">${toggleDistChartForm}</div>
       ${toggleDistChart ? html`
-        <div class="card grid-colspan-1">
-          <h4>In ${selectRegion}, <span class="val-increase">${percInc}%</span> of destinations saw a <span class="val-increase">rise</span> in visitors, while <span class="val-decrease">${percDec}%</span> experienced a <span class="val-decrease">decline</span>.</h4>
-          The chart below shows how much growth or decline each destination experienced.
+        <div class="card grid-colspan-1 dist-chart">
+          <h4>In ${selectRegion}, <span class="val-increase">${percInc}%</span> of destinations saw a <span class="val-increase">rise</span> in ${radiosTraveler} visitors, while <span class="val-decrease">${percDec}%</span> experienced a <span class="val-decrease">decline</span>.</h4>
+          The chart below shows the distribution of how much growth or decline each destination experienced.
           <br/><br/>
           ${resize((width) => percDistChart({ topDestChangeLong }, radiosTraveler, { width } ))}
         </div>
       ` : ""}
     </div>
-  </div>  
-  <div class="grid-colspan-1">
-    <div class="card">
-      <h2>🗺️ Interactive Travel Map: ${selectRegion}</h2>
-      <p>Each circle represents a destination—the bigger the circle, the more visitors it had. Hover to see exact traveler counts for each spot.</p>
-      <div class="map-ph">
-        ${resize((width) => mapPh({width}))}
-        ${selectRegion !== ALL_REGIONS ? htl.html`<div class="map-inset-ph">${mapInsetPh()}</div>` : ""}
-      </div>
-    </div>
-    <div class="card notes">
-      <h4>Data Notes</h4>
-      <ul>
-        <li>Most provinces have municipal-level data, but some regions only provide provincial totals.</li>
-        <li>The Bangsamoro region is excluded due to insufficient data coverage.</li>
-        <li>City-level data may not exactly sum up to provincial totals.</li>
-        <li>Destinations like Boracay (Malay, Aklan), Siargao (Gen. Luna, Surigao del Norte), and Clark (Angeles City) follow PSGC standards to maintain consistency and enable smoother data merging.</li>
-      </ul>
-      <h4>Data Source</h4>
-      <p>Philippine Department of Tourism</p>
-    </div>
   </div>
-</div>
-<div class="card">
-  <h2>📋 Full List of Destinations</h2>
-  <p>Explore the complete list of Philippine destinations with official traveler statistics. Click any place to view TripAdvisor’s travel guide and top-rated activities.</p>
-  <br/>
-  ${searchPhTourism}
-  <br/>
-  ${Inputs.table(
-    searchPhTourismValue,
-    {
-      columns: [ "year", "linkedDestination", "region", "id",  "total", "domestic", "foreign", "overseas" ],
-      header: {
-        year: "Year", id: "PSGC 9-digit Code", region: "Region", total: "Total", 
-        domestic: "Domestic", foreign: "Foreign", overseas: "Overseas",
-        linkedDestination: "Destination"
-      },
-      format: {
-        linkedDestination: ({ destination, link }) => htl.html`<a href=${link} target="_blank">${destination}</a>`
-      },
-      layout: "auto"
-    }
-  )}
+  <div class="card grid-colspan-1 grid-colspan-2">
+    <h2>📋 Full List of Destinations</h2>
+    <p>Explore the complete list of Philippine destinations with official traveler statistics. Click any place to view TripAdvisor’s travel guide and top-rated activities.</p>
+    <br/>
+    ${searchPhTourism}
+    <br/>
+    ${Inputs.table(
+      searchPhTourismValue,
+      {
+        columns: [ "year", "linkedDestination", "region", "id",  "total", "domestic", "foreign", "overseas" ],
+        header: {
+          year: "Year", id: "PSGC 9-digit Code", region: "Region", total: "Total", 
+          domestic: "Domestic", foreign: "Foreign", overseas: "Overseas",
+          linkedDestination: "Destination"
+        },
+        format: {
+          linkedDestination: ({ destination, link }) => htl.html`<a href=${link} target="_blank">${destination}</a>`
+        },
+        layout: "auto"
+      }
+    )}
+  </div>
+  <div class="card data-notes">
+        <h4>Data Notes</h4>
+        <ul>
+          <li>Most provinces have municipal-level data, but some regions only provide provincial totals.</li>
+          <li>The Bangsamoro region is excluded due to insufficient data coverage.</li>
+          <li>City-level data may not exactly sum up to provincial totals.</li>
+          <li>Destinations like Boracay (Malay, Aklan), Siargao (Gen. Luna, Surigao del Norte), and Clark (Angeles City) follow PSGC standards to maintain consistency and enable smoother data merging.</li>
+        </ul>
+        <h4>Data Source</h4>
+        <p>Philippine Department of Tourism</p>
+      </div>
 </div>
 
 <p>If you're planning to visit any of these places, always check travel advisories and consult your local embassy before booking your trip.</p>
@@ -522,7 +518,7 @@ const rangeTop = 10
   .table-container {
     width: 100%;
     height: 100%;
-    max-height: 250px;
+    max-height: 220px;
     overflow-y: auto;
 
     table {
@@ -609,7 +605,7 @@ const rangeTop = 10
 
   .top-dest-bars {
     overflow-y: auto;
-    max-height: 200px;
+    max-height: 220px;
   }
 
   .note {
