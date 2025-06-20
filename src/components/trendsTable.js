@@ -116,6 +116,7 @@ function totalTrendsLine({ topDestChangeLong }, selRegion, selTraveler, { width}
     marginLeft: 75,
     height: 120,
     width,
+    y: { label: "Traveler count" },
     // x: { domain: ["2019", "2021", "2023"].map(yr => new Date(+yr, 0, 1)) },
     marks: [
       Plot.ruleY([0]),
@@ -129,7 +130,10 @@ function totalTrendsLine({ topDestChangeLong }, selRegion, selTraveler, { width}
           x: "Year"
          },
          tip: {
-          format: { x: false },
+          format: { 
+            x: false,
+            // y: d => formatNumber(d.count),
+          },
          }
       })),
       Plot.areaY(dataRegion, Plot.binX(

@@ -504,6 +504,8 @@ const rangeTop = 10
   )}
 </div>
 
+If you have decided to visit any of this destinations, seek information and advice from your local embassies or advisories before booking your flights and itineraries.
+
 For any feedbacks, suggestions or opportunities for collaboration, please send an email at [josephricafort@gmail.com](mailto:josephricafort@gmail.com). Feel free to look at my previous works at [josephricafort.com](https://josephricafort.com)
 
 <style lang="scss">

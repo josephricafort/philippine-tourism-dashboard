@@ -11,28 +11,22 @@ function percDistChart({ topDestChangeLong }, traveler, { width } ) {
         
 
     return Plot.plot({
-        x: { domain: [MIN, MAX] },
-        y: { grid: true, ariaHidden: true },
+        x: { domain: [MIN, MAX], label: "% Change range" },
+        y: { grid: true, label: "Destination count" },
         height: 150,
         width,
         marks: [
             Plot.rectY(dataFiltered,
                 Plot.binX(
-                    {y: "count"}, {
+                    { y: "count"}, {
                         x: "percChange", 
                         y: "count",
                         fill: d => +d.percChange > 0 ? GREEN : RED,
-                        interval: 20, // selectRegion !== "All regions" ? 100 : 0
-                        channels: {
-                            "Destinations": d => d.count,
-                        },
+                        interval: 20,
                         tip: true
                     })),
             Plot.ruleY([0]),
             Plot.ruleX([0]),
-            Plot.tip(dataFiltered, Plot.pointer({
-                y: { ariaHidden: true },
-            }))
         ]
   })
 }
