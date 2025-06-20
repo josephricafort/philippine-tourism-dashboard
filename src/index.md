@@ -400,59 +400,59 @@ const rangeTop = 10
 
 <div class="grid grid-cols-1 header-container">
   <div class="grid-rowspan-1 header">
-    <h1>🏖️ Which Destinations Do Travelers Visit in the Philippines? 🇵🇭</h1>
-    <p>Explore the most popular and trending travel destinations in the Philippines using data. Know which destinations where proven to be top favorites for local and foreign travelers. See the breakdown of trends across different regions. To learn more about the destination, click the link that will lead you to TripAdvisor's suggestions of "Things to do".</p>
+    <h1>🏖️ Where Do Travelers Go in the Philippines? 🇵🇭</h1>
+    <p>Discover the Philippines' most visited and trending destinations—backed by data! See where local and foreign travelers love to go, explore regional patterns, and uncover hidden gems. Click any location to view TripAdvisor's top “Things to Do” and start planning your adventure.</p>
     <div class="select-region-form">${selectRegionForm}</div>
   </div>
 </div>
 <div class="grid grid-cols-2">
   <div class="grid-colspan-1">
     <div class="card">
-      <h2>🌟 Popular Destinations</h2>
-      <p>Know the most popular destinations sorted according to traveler counts combined across selected years: ${checkboxYears.join(", ")}.</p>
+      <h2>🌟 Top Travel Hotspots</h2>
+      <p>Explore the most visited destinations based on traveler numbers across the selected years: ${checkboxYears.join(", ")}.</p>
       <div class="grid grid-cols-2">
         <div class=""> ${checkboxYearsForm} </div>
       </div>
       <div class="grid grid-cols-3">
         <div class="card grid-colspan-1">
           <p><span class="key-value">${formatNumber(subTotal)} </span>visits</p>
-          <p>in <span style="font-weight: 700;">${selectRegion}</span> in year/s ${checkboxYears.join(", ")}</p>
+          <p>in <span style="font-weight: 700;">${selectRegion}</span> during ${checkboxYears.join(", ")}</p>
           ${resize((width) => totalBars({ phTourismBars }, {width}))}
           <br />
         </div>
         <div class="card grid-colspan-2">
-          <h4>Most Popular Destinations in ${selectRegion}</h4>
+          <h4>Most Visited Spots in ${selectRegion}</h4>
           <div class="">
             ${barsTable({ topDestinationsWide, topDestinations }, { resize, region: selectRegion, years: checkboxYears })}
           </div>
         </div>
       </div>
       <div>
-        <p>For the totals, only the municipal value level were included while the provincial values were filtered out.</p>
+        <p>Note: Only municipal-level data was included in the totals. Provincial rollups were excluded to avoid duplication.</p>
       </div>
     </div>
     <div class="card trending-destinations">
-      <h2>📈 Trending Destinations between 2019 and 2023</h2>
-      <p>See which destinations show significant rise or drop in visitor numbers. Be the first to discover trending destinations before they get too crowded.</p>
+      <h2>📈 Trending Destinations (2019–2023)</h2>
+      <p>Find out which places are gaining popularity—or dropping off the radar. Spot rising stars before everyone else does!</p>
       ${view(radiosTravelerForm)}
       <div class="grid grid-cols-3">
         <div class="card grid-colspan-1" style="padding-right: 10px;">
-          <p>The number of ${radiosTraveler === "total" ? "All" : capFirstLetter(radiosTraveler)} travelers to 
+          <p>${radiosTraveler === "total" ? "All" : capFirstLetter(radiosTraveler)} travelers to 
             <span style="font-weight: 700;">${selectRegion}</span> have 
             <span>${styledKeyValue(percChange > 0 ? "increased" : "decreased")}</span> by</p>
           <p><span class="key-value">${styledKeyValue(percChangeOverall)}</span></p>
           ${resize((width) => totalTrendsLine({ topDestChangeLong }, selectRegion, radiosTraveler, { width } ))}
         </div>
         <div class="card grid-colspan-2">
-          <h4>Most Trending Destinations in ${selectRegion}</h4>
+          <h4>Top Trending Places in ${selectRegion}</h4>
           ${trendsTable(trendsTableData, { resize, selTraveler: radiosTraveler, rangeTop })}
         </div>
       </div>
       <div class="toggle-dist-chart">${toggleDistChartForm}</div>
       ${toggleDistChart ? html`
         <div class="card grid-colspan-1">
-          <h4>In ${selectRegion}, <span class="val-increase">${percInc}%</span> of the destinations have <span class="val-increase">increased</span> in number of travelers while <span class="val-decrease">${percDec}%</span> have seen a <span class="val-decrease">decline</span>.</h4>
-          The distribution below shows by how much increase or decrease in travelers these destinations had.
+          <h4>In ${selectRegion}, <span class="val-increase">${percInc}%</span> of destinations saw a <span class="val-increase">rise</span> in visitors, while <span class="val-decrease">${percDec}%</span> experienced a <span class="val-decrease">decline</span>.</h4>
+          The chart below shows how much growth or decline each destination experienced.
           <br/><br/>
           ${resize((width) => percDistChart({ topDestChangeLong }, radiosTraveler, { width } ))}
         </div>
@@ -461,29 +461,29 @@ const rangeTop = 10
   </div>  
   <div class="grid-colspan-1">
     <div class="card">
-      <h2>🗺️ Map of destinations travelers go in ${selectRegion}</h2>
-      <p>The sizes of the circles shows how many travelers have visited the destination. Hover over the circles to see travelers count for every destination.</p>
+      <h2>🗺️ Interactive Travel Map: ${selectRegion}</h2>
+      <p>Each circle represents a destination—the bigger the circle, the more visitors it had. Hover to see exact traveler counts for each spot.</p>
       <div class="map-ph">
         ${resize((width) => mapPh({width}))}
         ${selectRegion !== ALL_REGIONS ? htl.html`<div class="map-inset-ph">${mapInsetPh()}</div>` : ""}
       </div>
     </div>
     <div class="card notes">
-      <h4>Notes on the Data</h4>
+      <h4>Data Notes</h4>
       <ul>
-        <li>While majority of the provinces have data up to the municipal level, some regions only have up to provincial level data.</li>
-        <li>Bangsamoro region was not included due to significantly insufficient data</li>
-        <li>Municipal or city level data may or may not sum up to Provincial data</li>
-        <li>Some destinations like Boracay (Malay, Aklan), Siargao Island (Gen. Luna, Surigao del Norte) and Clark (Angeles City) were encoded in their municipal level data to keep in standard with the released Philippine Standard Geographic Code and joining multiple data would be easier.</li>
+        <li>Most provinces have municipal-level data, but some regions only provide provincial totals.</li>
+        <li>The Bangsamoro region is excluded due to insufficient data coverage.</li>
+        <li>City-level data may not exactly sum up to provincial totals.</li>
+        <li>Destinations like Boracay (Malay, Aklan), Siargao (Gen. Luna, Surigao del Norte), and Clark (Angeles City) follow PSGC standards to maintain consistency and enable smoother data merging.</li>
       </ul>
       <h4>Data Source</h4>
-      <p>Department of Tourism</p>
+      <p>Philippine Department of Tourism</p>
     </div>
   </div>
 </div>
 <div class="card">
-  <h2>All Destinations</h2>
-  <p>Here's a complete list of all the Philippine destinations with all the traveler counts. The link to every destination leads to an external site TripAdvisor. This way, you may check what activities or attractions are available to the destination.</p>
+  <h2>📋 Full List of Destinations</h2>
+  <p>Explore the complete list of Philippine destinations with official traveler statistics. Click any place to view TripAdvisor’s travel guide and top-rated activities.</p>
   <br/>
   ${searchPhTourism}
   <br/>
@@ -504,9 +504,10 @@ const rangeTop = 10
   )}
 </div>
 
-If you have decided to visit any of this destinations, seek information and advice from your local embassies or advisories before booking your flights and itineraries.
+<p>If you're planning to visit any of these places, always check travel advisories and consult your local embassy before booking your trip.</p>
 
-For any feedbacks, suggestions or opportunities for collaboration, please send an email at [josephricafort@gmail.com](mailto:josephricafort@gmail.com). Feel free to look at my previous works at [josephricafort.com](https://josephricafort.com)
+<p>Got feedback, suggestions, or collaboration ideas? Drop a line at <a href="mailto:josephricafort@gmail.com">josephricafort@gmail.com</a>. View more of my work at <a href="https://josephricafort.com" target="_blank">josephricafort.com</a>.</p>
+
 
 <style lang="scss">
   h1, h2, h3, h4, h5, p {
