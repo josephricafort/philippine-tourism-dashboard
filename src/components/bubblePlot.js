@@ -61,11 +61,7 @@ function bubblePlotTooltip({data, features}, selectRegion, options){
         // Tooltip for MUNICIPAL level data
         tooltipPlot(phMuniFeatures),
         Plot.tip(features, Plot.pointer({
-            x: "weight",
-            y: "height",
             r: { ariaHidden: true },
-            filter: (d) => d.info,
-            title: (d) => [d.name, d.info].join("\n\n")
         }))
     ]
 }

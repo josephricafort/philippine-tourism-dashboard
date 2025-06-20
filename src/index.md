@@ -59,13 +59,14 @@ const philippines = FileAttachment("./data/philippines.json").json({ typed: true
 
 ```js
 // Data for the map
-const nirProvinces = [
+const fixIdProvinces = [
     { province: "Negros Occidental", newId: "184500000" },
     { province: "Negros Oriental", newId: "184600000" },
-    { province: "Siquijor", newId: "186100000" }
+    { province: "Siquijor", newId: "186100000" },
+    { province: "Zambales", newId: "037100000"}
   ]
-const nirProvincesMap = new Map(nirProvinces.map(d => [ d.province, d.newId ]))
-const nirProvincesOnly = nirProvinces.map(d => d.province)
+const fixIdProvincesMap = new Map(fixIdProvinces.map(d => [ d.province, d.newId ]))
+const fixIdProvincesOnly = fixIdProvinces.map(d => d.province)
 
 const phProvinces = topojson.feature(philippines, philippines.objects.provinces)
 const phProvFeatures = aq.from(phProvinces.features)
@@ -80,8 +81,8 @@ const phProvFeatures = aq.from(phProvinces.features)
       }
     })
     .derive({
-      id: aq.escape(d => nirProvincesOnly.includes(d.properties["NAME_1"]) ? 
-                    nirProvincesMap.get(d.properties["NAME_1"]) : d.id)
+      id: aq.escape(d => fixIdProvincesOnly.includes(d.properties["NAME_1"]) ? 
+                    fixIdProvincesMap.get(d.properties["NAME_1"]) : d.id)
     })
     // 
     .objects()
@@ -106,7 +107,7 @@ const regCenterZoom = FileAttachment("./data/regional-center-zoom.csv").csv({ ty
 ```js
 // Philippine Map
 const phInset = FileAttachment("./data/phInset.json").json({ typed: true })
-const phRegionsFile = FileAttachment("./data/regions_nir.json").json({ typed: true })
+const phRegionsFile = FileAttachment("./data/regions_nir_zambales.json").json({ typed: true })
 ```
 
 ```js
@@ -162,7 +163,7 @@ function mapInsetPh() {
 ```
 
 ```js
-const phRegions = topojson.feature(phRegionsFile, phRegionsFile.objects.regions_nir)
+const phRegions = topojson.feature(phRegionsFile, phRegionsFile.objects.regions_nir_zambales)
 const phRegionsCorrected = [
       ...aq.from(phTourismWide)
         .select("id", "region")
@@ -399,8 +400,8 @@ const rangeTop = 10
 
 <div class="grid grid-cols-1 header-container">
   <div class="grid-rowspan-1 header">
-    <h1>🇵🇭 Where Do Most Travelers Go in the Philippines? 🏖️</h1>
-    <p>Explore the most popular and trending travel destinations in the Philippines using data. Know which destinations where proven to be top favorites for locals and foreign travelers. See the breakdown of trends across different regions. Clicking the destination leads you to TripAdvisor's suggestions of "Things to do".</p>
+    <h1>🏖️ Which Destinations Do Travelers Visit in the Philippines? 🇵🇭</h1>
+    <p>Explore the most popular and trending travel destinations in the Philippines using data. Know which destinations where proven to be top favorites for local and foreign travelers. See the breakdown of trends across different regions. To learn more about the destination, click the link that will lead you to TripAdvisor's suggestions of "Things to do".</p>
     <div class="select-region-form">${selectRegionForm}</div>
   </div>
 </div>
@@ -408,7 +409,7 @@ const rangeTop = 10
   <div class="grid-colspan-1">
     <div class="card">
       <h2>🌟 Popular Destinations</h2>
-      <p>Know the most popular destinations sorted based from the most traveler counts combined across selected years: ${checkboxYears.join(", ")}.</p>
+      <p>Know the most popular destinations sorted according to traveler counts combined across selected years: ${checkboxYears.join(", ")}.</p>
       <div class="grid grid-cols-2">
         <div class=""> ${checkboxYearsForm} </div>
       </div>
@@ -432,7 +433,7 @@ const rangeTop = 10
     </div>
     <div class="card trending-destinations">
       <h2>📈 Trending Destinations between 2019 and 2023</h2>
-      <p>Be the first to discover trending destinations before they get too crowded. See which destinations show significant drop in visitor numbers.</p>
+      <p>See which destinations show significant rise or drop in visitor numbers. Be the first to discover trending destinations before they get too crowded.</p>
       ${view(radiosTravelerForm)}
       <div class="grid grid-cols-3">
         <div class="card grid-colspan-1" style="padding-right: 10px;">
@@ -472,7 +473,7 @@ const rangeTop = 10
       <ul>
         <li>While majority of the provinces have data up to the municipal level, some regions only have up to provincial level data.</li>
         <li>Bangsamoro region was not included due to significantly insufficient data</li>
-        <li>Municipal data may or may not sum up to Provincial data</li>
+        <li>Municipal or city level data may or may not sum up to Provincial data</li>
         <li>Some destinations like Boracay (Malay, Aklan), Siargao Island (Gen. Luna, Surigao del Norte) and Clark (Angeles City) were encoded in their municipal level data to keep in standard with the released Philippine Standard Geographic Code and joining multiple data would be easier.</li>
       </ul>
       <h4>Data Source</h4>
