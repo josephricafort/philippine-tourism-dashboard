@@ -1,6 +1,6 @@
 ---
 theme: [ ocean-floor, wide ]
-title: Philippine Tourist Destinations - Data Explorer
+title: 🏖️ Where Do Travelers Go in the Philippines? 🇵🇭
 toc: false
 ---
 
@@ -14,6 +14,8 @@ import { legendSpike } from "./data/utils.js"
 import { totalBars, topDestBars, barsTable } from "./components/barCharts.js"
 import { percDistChart } from "./components/distributionChart.js"
 import { trendsTable, totalTrendsLine } from "./components/trendsTable.js"
+
+import socialShares from "./components/socialShares.js"
 ```
 
 ```js
@@ -417,6 +419,7 @@ const searchPhTourismValue = Generators.input(searchPhTourism);
 const trendsTableData = { topDestinationsChange, topDestChangeLong }
 const rangeTop = 10
 ```
+
 <div class="main">
   <div class="grid grid-colspan-1 grid-cols-1 header-container">
     <div class="header">
@@ -509,7 +512,7 @@ const rangeTop = 10
       }
     )}
   </div>
-  <div class="card grid grid-cols-2 data-notes" style="grid-auto-rows: auto;">
+  <div class="card grid grid-cols-3 data-notes" style="grid-auto-rows: auto;">
     <div class="">
       <h4>Data Notes</h4>
       <ul>
@@ -525,6 +528,9 @@ const rangeTop = 10
       <h4>Next Steps</h4>
       <p>If you're planning to visit any of these places, always check travel advisories and consult your local embassy before booking your trip.</p>
       <p>Got feedback, suggestions, or collaboration ideas? Drop a line at <a href="mailto:josephricafort@gmail.com">josephricafort@gmail.com</a>. See more of my projects at <a href="https://josephricafort.com" target="_blank">josephricafort.com</a>.</p>
+    </div>
+    <div id="social-share">
+      ${resize((width) => socialShares({ width }))}
     </div>
   </div>
 </div>
@@ -615,10 +621,12 @@ const rangeTop = 10
     /* background: color-mix(in srgb, var(--theme-foreground) 4%, #0b0b16); */
     padding: 10px;
     border-radius: 5px;
-    max-width: 400px;
+    max-width: 420px;
     border: 2px solid #555555;
+    width: 100%;
 
     form {
+      width: 100%;
       label {
         font-weight: 500;
         font-size: 14px;
