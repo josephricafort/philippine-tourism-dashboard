@@ -18,7 +18,8 @@ function bubblePlot({data, features}, selTraveler, options){
         geometry: d => d.geometry,
         tip: false,
         sort: {channel: "-r"},
-    }))]
+    })),
+    ]
 }
 
 function bubblePlotTooltip({data, features}, selectRegion, options){
