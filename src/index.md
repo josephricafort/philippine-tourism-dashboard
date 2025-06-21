@@ -490,27 +490,29 @@ const rangeTop = 10
       ` : ""}
     </div>
   </div>
-  <div class="card">
+  <div class="card full-list" >
     <h2>📋 Full List of Destinations</h2>
     <p>Explore the complete list of Philippine destinations with official traveler statistics. Click any place to view TripAdvisor’s travel guide and top-rated activities.</p>
     <br/>
     ${searchPhTourism}
     <br/>
-    ${Inputs.table(
-      searchPhTourismValue,
-      {
-        columns: [ "year", "linkedDestination", "region", "id",  "total", "domestic", "foreign", "overseas" ],
-        header: {
-          year: "Year", id: "PSGC 9-digit Code", region: "Region", total: "Total", 
-          domestic: "Domestic", foreign: "Foreign", overseas: "Overseas",
-          linkedDestination: "Destination"
-        },
-        format: {
-          linkedDestination: ({ destination, link }) => htl.html`<a href=${link} target="_blank">${destination}</a>`
-        },
-        layout: "auto"
-      }
-    )}
+    <div class="full-list-table">
+      ${Inputs.table(
+        searchPhTourismValue,
+        {
+          columns: [ "year", "linkedDestination", "region", "id",  "total", "domestic", "foreign", "overseas" ],
+          header: {
+            year: "Year", id: "PSGC 9-digit Code", region: "Region", total: "Total", 
+            domestic: "Domestic", foreign: "Foreign", overseas: "Overseas",
+            linkedDestination: "Destination"
+          },
+          format: {
+            linkedDestination: ({ destination, link }) => htl.html`<a href=${link} target="_blank">${destination}</a>`
+          },
+          layout: "auto"
+        }
+      )}
+    </div>
   </div>
   <div class="card grid grid-cols-3 data-notes" style="grid-auto-rows: auto;">
     <div class="">
@@ -689,6 +691,10 @@ const rangeTop = 10
 
     .table-container {
       max-height: 350px;
+    }
+
+    #inputs-3a86ea-7 {
+      max-height: 400px !important;
     }
   }
 
