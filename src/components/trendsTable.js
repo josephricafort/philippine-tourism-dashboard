@@ -3,6 +3,8 @@ import  { html } from "npm:htl";
 import { formatNumber, formatDestination, getTripAdvisorUrl } from "./utils.js";
 import { GREEN, RED, MOBILE_BREAKPOINT } from "./constants.js"
 
+const tableBreakpoint = MOBILE_BREAKPOINT / 3
+
 function trendsTable(data, {resize, selTraveler, rangeTop }) {
   const { topDestinationsChange, topDestChangeLong } = data;
   function percChangeStyle(perc) {
@@ -23,9 +25,9 @@ function trendsTable(data, {resize, selTraveler, rangeTop }) {
             <tr>
               <th class="rank"></th>
               <th class="municity">Destination</th>
-              ${width > MOBILE_BREAKPOINT ? html`<th class="tourist-count">2019</th>` : html``}
-              ${width > MOBILE_BREAKPOINT ? html`<th class="tourist-count">2021</th>` : html``}
-              ${width > MOBILE_BREAKPOINT ? html`<th class="tourist-count">2023</th>` : html``}
+              ${width > tableBreakpoint ? html`<th class="tourist-count">2019</th>` : html``}
+              ${width > tableBreakpoint ? html`<th class="tourist-count">2021</th>` : html``}
+              ${width > tableBreakpoint ? html`<th class="tourist-count">2023</th>` : html``}
               <th class="sparkline">Trend</th>
               <th class="tourist-perc-change">Change</th>
             </tr>
@@ -41,9 +43,9 @@ function trendsTable(data, {resize, selTraveler, rangeTop }) {
                     ${ formatDestination({ region, province, muniCity })}
                   </a>
                 </td>
-                ${width > MOBILE_BREAKPOINT ? html`<td class="tourist-count">${year2019 > 0 ? formatNumber(year2019) : "-"}</td>` : html``}
-                ${width > MOBILE_BREAKPOINT ? html`<td class="tourist-count">${!isNaN(year2021) ? formatNumber(year2021) : "-"}</td>` : html``}
-                ${width > MOBILE_BREAKPOINT ? html`<td class="tourist-count">${formatNumber(year2023)}</td>` : html``}
+                ${width > tableBreakpoint ? html`<td class="tourist-count">${year2019 > 0 ? formatNumber(year2019) : "-"}</td>` : html``}
+                ${width > tableBreakpoint ? html`<td class="tourist-count">${!isNaN(year2021) ? formatNumber(year2021) : "-"}</td>` : html``}
+                ${width > tableBreakpoint ? html`<td class="tourist-count">${formatNumber(year2023)}</td>` : html``}
                 <td class="sparkline">${sparklineDest({ topDestChangeLong }, traveler, provMuniCity)}</td>
                 <td class="tourist-perc-change" style="${percChangeStyle(percChange)}">
                     ${percChange > 0 ? "+" : ""}${formatNumber(percChange)}%

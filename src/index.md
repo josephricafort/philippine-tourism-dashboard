@@ -107,7 +107,7 @@ const regCenterZoom = FileAttachment("./data/regional-center-zoom.csv").csv({ ty
 ```js
 // Philippine Map
 const phInset = FileAttachment("./data/phInset.json").json({ typed: true })
-const phRegionsFile = FileAttachment("./data/regions_nir_zambales.json").json({ typed: true })
+const phRegionsFile = FileAttachment("./data/regions_benguet.json").json({ typed: true })
 ```
 
 ```js
@@ -163,7 +163,7 @@ function mapInsetPh() {
 ```
 
 ```js
-const phRegions = topojson.feature(phRegionsFile, phRegionsFile.objects.regions_nir_zambales)
+const phRegions = topojson.feature(phRegionsFile, phRegionsFile.objects.regions_benguet)
 const phRegionsCorrected = [
       ...aq.from(phTourismWide)
         .select("id", "region")
@@ -396,7 +396,7 @@ const searchPhTourismValue = Generators.input(searchPhTourism);
 const trendsTableData = { topDestinationsChange, topDestChangeLong }
 const rangeTop = 10
 ```
-<div class="main grid-cols-1">
+<div class="main">
   <div class="grid grid-colspan-1 grid-cols-1 header-container">
     <div class="header">
       <h1>🏖️ Where Do Travelers Go in the Philippines? 🇵🇭</h1>
@@ -465,7 +465,7 @@ const rangeTop = 10
       ` : ""}
     </div>
   </div>
-  <div class="card grid-colspan-1 grid-colspan-2">
+  <div class="card">
     <h2>📋 Full List of Destinations</h2>
     <p>Explore the complete list of Philippine destinations with official traveler statistics. Click any place to view TripAdvisor’s travel guide and top-rated activities.</p>
     <br/>
@@ -487,22 +487,25 @@ const rangeTop = 10
       }
     )}
   </div>
-  <div class="card data-notes">
-        <h4>Data Notes</h4>
-        <ul>
-          <li>Most provinces have municipal-level data, but some regions only provide provincial totals.</li>
-          <li>The Bangsamoro region is excluded due to insufficient data coverage.</li>
-          <li>City-level data may not exactly sum up to provincial totals.</li>
-          <li>Destinations like Boracay (Malay, Aklan), Siargao (Gen. Luna, Surigao del Norte), and Clark (Angeles City) follow PSGC standards to maintain consistency and enable smoother data merging.</li>
-        </ul>
-        <h4>Data Source</h4>
-        <p>Philippine Department of Tourism</p>
-      </div>
+  <div class="card grid grid-cols-2 data-notes" style="grid-auto-rows: auto;">
+    <div class="">
+      <h4>Data Notes</h4>
+      <ul>
+        <li>Most provinces have municipal-level data, but some regions only provide provincial totals.</li>
+        <li>The Bangsamoro region is excluded due to insufficient data coverage.</li>
+        <li>Municipal-level or city-level data may not exactly sum up to provincial totals.</li>
+        <li>Destinations like Boracay (Malay, Aklan), Siargao (Gen. Luna, Surigao del Norte), and Clark (Angeles City) follow PSGC standards to maintain consistency and enable smoother data merging.</li>
+      </ul>
+      <h4>Data Source</h4>
+      <p>Philippine Department of Tourism</p>
+    </div>
+    <div class="">
+      <h4>Next Steps</h4>
+      <p>If you're planning to visit any of these places, always check travel advisories and consult your local embassy before booking your trip.</p>
+      <p>Got feedback, suggestions, or collaboration ideas? Drop a line at <a href="mailto:josephricafort@gmail.com">josephricafort@gmail.com</a>. See more of my projects at <a href="https://josephricafort.com" target="_blank">josephricafort.com</a>.</p>
+    </div>
+  </div>
 </div>
-
-<p>If you're planning to visit any of these places, always check travel advisories and consult your local embassy before booking your trip.</p>
-
-<p>Got feedback, suggestions, or collaboration ideas? Drop a line at <a href="mailto:josephricafort@gmail.com">josephricafort@gmail.com</a>. View more of my work at <a href="https://josephricafort.com" target="_blank">josephricafort.com</a>.</p>
 
 
 <style lang="scss">
