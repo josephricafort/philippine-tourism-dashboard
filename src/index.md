@@ -17,6 +17,23 @@ import { trendsTable, totalTrendsLine } from "./components/trendsTable.js"
 ```
 
 ```js
+// In a .js file or JavaScript code block
+let screenWidth = window.innerWidth;
+
+// Create a reactive update function
+function updateScreenWidth() {
+  screenWidth = window.innerWidth;
+  // Trigger any updates that depend on screenWidth
+  // updateLayout();
+}
+
+// Listen for resize events
+window.addEventListener('resize', updateScreenWidth);
+
+console.log("screenWidth: ", screenWidth)
+```
+
+```js
 // Tourism data for the Philippines
 const phTourismLong = FileAttachment("./data/rt_psgc_municity.csv").csv({typed: false})
   .then(data => aq.from(data)
@@ -204,7 +221,12 @@ function mapPh({width, height}) {
     .domain(d3.extent(d3.map(phTourismFiltered, d => d.count)))
     .range([0.3, 1])
 
-  const range = selectRegion === ALL_REGIONS ? [0, 35] : [0, 50]
+  let range
+  if(screenWidth < MOBILE_BREAKPOINT){
+    range = selectRegion === ALL_REGIONS ? [0, 10] : [0, 30]
+  } else {
+    range = selectRegion === ALL_REGIONS ? [0, 30] : [0, 50]
+  }
 
   return Plot.plot({
     projection: {
@@ -235,7 +257,7 @@ function mapPh({width, height}) {
         bubblePlot(bbPlotProvData, "domestic", { fill: "steelblue", fillOpacity: 0.5, tip: false }),
         bubblePlot(bbPlotProvData, "foreign", { fill: "orange", fillOpacity: 0.5, tip: false }),
         bubblePlotTooltip(bbPlotTooltipData, selectRegion, { fill: "pink", fillOpacity: 0 }),
-        radiusLegend([0.25, 1, 2], { r: (d) => d * 1e6, title: (d) => `${d}M`}),
+        radiusLegend([0.25, 1, 2], { r: (d) => d * 1e6, className: "radius-legend", title: (d) => `${d}M`}),
 
         // Location text labels
         Plot.text(phProvFeatures, Plot.centroid({
@@ -399,6 +421,7 @@ const rangeTop = 10
 <div class="main">
   <div class="grid grid-colspan-1 grid-cols-1 header-container">
     <div class="header">
+      <p class="kicker">Travel Trends PH</p>
       <h1>🏖️ Where Do Travelers Go in the Philippines? 🇵🇭</h1>
       <p>Discover the Philippines' most visited and trending destinations—backed by data! See where local and foreign travelers love to go, explore regional patterns, and uncover hidden gems. Click any location to view TripAdvisor's top “Things to Do” and start planning your adventure.</p>
       <div class="select-region-form">${selectRegionForm}</div>
@@ -411,7 +434,7 @@ const rangeTop = 10
       <div class="checkbox-years">
         <div class=""> ${checkboxYearsForm} </div>
       </div>
-      <div class="grid grid-cols-3 travel-hotspots-charts">
+      <div class="grid grid-cols-3 travel-hotspots-charts" style="grid-auto-rows: auto;">
         <div class="card grid-colspan-1 overall">
           <p><span class="key-value">${formatNumber(subTotal)} </span>visits</p>
           <p>in <span style="font-weight: 700;">${selectRegion}</span> during ${checkboxYears.join(", ")}</p>
@@ -441,7 +464,7 @@ const rangeTop = 10
       <h2>📈 Trending Destinations (2019–2023)</h2>
       <p>Find out which places are gaining popularity—or dropping off the radar. Spot rising stars before everyone else does!</p>
       ${view(radiosTravelerForm)}
-      <div class="grid grid-cols-3 trending-destinations-charts">
+      <div class="grid grid-cols-3 trending-destinations-charts" style="grid-auto-rows: auto;">
         <div class="card grid-colspan-1 overall-trend">
           <p>${radiosTraveler === "total" ? "All" : capFirstLetter(radiosTraveler)} travelers to 
             <span style="font-weight: 700;">${selectRegion}</span> have 
@@ -576,8 +599,15 @@ const rangeTop = 10
     z-index: 50; */
 
     .header {
+      position: relative;
+      .kicker {
+        text-transform: uppercase;
+      }
 
       .select-region-form {
+        position: sticky;
+        top: 10px;
+
         form {
           select {
             padding: 5px;
@@ -626,6 +656,22 @@ const rangeTop = 10
 
   .val-increase { color: #3ca952 }
   .val-decrease { color: #e45756 }
+
+  @media (max-width: 768px) {
+    .map-ph {
+      .map-inset-ph {
+        display: none;
+      }
+
+      .radius-legend {
+        display: none;
+      }
+    }
+
+    .table-container {
+      max-height: 350px;
+    }
+  }
 
 
 </style>
