@@ -618,12 +618,10 @@ const rangeTop = 10
     position: sticky;
     top: 20px;
     z-index: 100;
-    /* background: color-mix(in srgb, var(--theme-foreground) 4%, #0b0b16); */
     padding: 10px;
     border-radius: 5px;
-    max-width: 350px;
     border: 2px solid #555555;
-    width: 100%;
+    max-width: 400px;
 
     form {
       width: 100%;
