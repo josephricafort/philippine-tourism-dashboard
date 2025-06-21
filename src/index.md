@@ -423,7 +423,7 @@ const rangeTop = 10
 <div class="main">
   <div class="grid grid-colspan-1 grid-cols-1 header-container">
     <div class="header">
-      <p class="kicker">🇵🇭 Travel Trends PH</p>
+      <p class="kicker">Travel Trends PH 🇵🇭</p>
       <h1>🏖️ Where Do Travelers Go in the Philippines?</h1>
       <p>Discover the Philippines' most visited and trending destinations—backed by data! See where local and foreign travelers love to go, explore regional patterns, and uncover hidden gems. Click any location to view TripAdvisor's top “Things to Do” and start planning your adventure.</p>
     </div>
