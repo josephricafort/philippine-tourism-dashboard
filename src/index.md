@@ -612,14 +612,16 @@ const rangeTop = 10
     position: sticky;
     top: 20px;
     z-index: 100;
-    background: color-mix(in srgb, var(--theme-foreground) 4%, #0b0b16);
+    /* background: color-mix(in srgb, var(--theme-foreground) 4%, #0b0b16); */
     padding: 10px;
     border-radius: 5px;
     max-width: 400px;
+    border: 2px solid #555555;
 
     form {
       label {
-        
+        font-weight: 500;
+        font-size: 14px;
       }
 
       select {
