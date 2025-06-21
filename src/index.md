@@ -16,9 +16,12 @@ import { percDistChart } from "./components/distributionChart.js"
 import { trendsTable, totalTrendsLine } from "./components/trendsTable.js"
 
 import socialShares from "./components/socialShares.js"
+import { inject } from "@vercel/analytics"
 ```
 
 ```js
+inject() // Vercel Analytics
+
 // In a .js file or JavaScript code block
 let screenWidth = window.innerWidth;
 
