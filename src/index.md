@@ -24,7 +24,6 @@ let screenWidth = window.innerWidth;
 function updateScreenWidth() {
   screenWidth = window.innerWidth;
   // Trigger any updates that depend on screenWidth
-  // updateLayout();
 }
 
 // Listen for resize events
@@ -424,9 +423,9 @@ const rangeTop = 10
       <p class="kicker">Travel Trends PH</p>
       <h1>🏖️ Where Do Travelers Go in the Philippines? 🇵🇭</h1>
       <p>Discover the Philippines' most visited and trending destinations—backed by data! See where local and foreign travelers love to go, explore regional patterns, and uncover hidden gems. Click any location to view TripAdvisor's top “Things to Do” and start planning your adventure.</p>
-      <div class="select-region-form">${selectRegionForm}</div>
     </div>
   </div>
+  <div class="card select-region-form">${selectRegionForm}</div>
   <div class="grid grid-cols-2" style="grid-auto-rows: auto;">
     <div class="card travel-hotspots">
       <h2>🌟 Top Travel Hotspots</h2>
@@ -532,8 +531,13 @@ const rangeTop = 10
 
 
 <style lang="scss">
+  @import url("observable:ocean-floor.css");
+  @import url("observable:wide.css");
+
   h1, h2, h3, h4, h5, p {
     max-width: 100%;
+    font-family: "Nunito Sans", sans-serif;
+    font-optical-sizing: auto;
   }
 
   h2 { 
@@ -593,27 +597,34 @@ const rangeTop = 10
   }
 
   .header-container {
-    /* position: sticky !important;
-    top: 20px;
-    background: black;
-    z-index: 50; */
-
     .header {
-      position: relative;
+      overflow: visible;
+
       .kicker {
         text-transform: uppercase;
+        font-family: "Nunito Sans", sans-serif;
+        font-optical-sizing: auto;
+      }
+    }
+  }
+
+  .select-region-form {
+    position: sticky;
+    top: 20px;
+    z-index: 100;
+    background: color-mix(in srgb, var(--theme-foreground) 4%, #0b0b16);
+    padding: 10px;
+    border-radius: 5px;
+    max-width: 400px;
+
+    form {
+      label {
+        
       }
 
-      .select-region-form {
-        position: sticky;
-        top: 10px;
-
-        form {
-          select {
-            padding: 5px;
-            font-weight: 700;
-          }
-        }
+      select {
+        padding: 5px;
+        font-weight: 700;
       }
     }
   }
