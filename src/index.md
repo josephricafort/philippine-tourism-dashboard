@@ -20,6 +20,17 @@ import { inject } from "@vercel/analytics"
 ```
 
 ```js
+// CJ Affiliate script
+if (typeof window !== "undefined" && !window.__CJ_SCRIPT_LOADED__) {
+  const script = document.createElement("script");
+  script.src = "https://www.anrdoezrs.net/am/101471840/include/allCj/impressions/page/am.js";
+  script.async = true;
+  document.body.appendChild(script);
+  window.__CJ_SCRIPT_LOADED__ = true; // flag to avoid multiple inserts
+}
+```
+
+```js
 inject() // Vercel Analytics
 
 // In a .js file or JavaScript code block
@@ -33,8 +44,6 @@ function updateScreenWidth() {
 
 // Listen for resize events
 window.addEventListener('resize', updateScreenWidth);
-
-console.log("screenWidth: ", screenWidth)
 ```
 
 ```js
@@ -428,7 +437,7 @@ const rangeTop = 10
     <div class="header">
       <p class="kicker">Travel Trends PH 🇵🇭</p>
       <h1>🏖️ Where Do Travelers Go in the Philippines?</h1>
-      <p>Discover the Philippines' most visited and trending destinations—backed by data! See where local and foreign travelers love to go, explore regional patterns, and uncover hidden gems. Click any location to view TripAdvisor's top “Things to Do” and start planning your adventure.</p>
+      <p class="description">Discover the Philippines' most visited and trending destinations—backed by data! See where local and foreign travelers love to go, explore regional patterns, and uncover hidden gems. Click any location to view TripAdvisor's top “Things to Do” and start planning your adventure.</p>
     </div>
   </div>
   <div class="card select-region-form">${selectRegionForm}</div>
@@ -545,6 +554,16 @@ const rangeTop = 10
   @import url("observable:ocean-floor.css");
   @import url("observable:wide.css");
 
+  html {
+    background-image: linear-gradient(to right top, #120d3d, #0d1240, #091642, #051a44, #021e45, #131f47, #1e2148, #282249, #3c2048, #4d1f43, #5a1e3c, #642033);
+  }
+
+  .card {
+    background: rgb(5, 3, 29, 0.9);
+    border: 1px solid rgba(80, 80, 80, 0.9)
+    /* color: rgba(0, 0, 0, 1) */
+  }
+
   h1, h2, h3, h4, h5, p {
     max-width: 100%;
     font-family: "Nunito Sans", sans-serif;
@@ -615,6 +634,10 @@ const rangeTop = 10
         text-transform: uppercase;
         font-family: "Nunito Sans", sans-serif;
         font-optical-sizing: auto;
+      }
+
+      .description {
+        max-width: calc(50vw - 40px);
       }
     }
   }
@@ -698,6 +721,16 @@ const rangeTop = 10
 
     #inputs-3a86ea-7 {
       max-height: 400px !important;
+    }
+  }
+
+  @media (max-width: 1024px){
+    .header-container {
+      .header {
+        .description {
+          max-width: unset;
+        }
+      }
     }
   }
 
