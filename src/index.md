@@ -564,7 +564,7 @@ const rangeTop = 10
     /* color: rgba(0, 0, 0, 1) */
   }
 
-  h1, h2, h3, h4, h5, p {
+  h1, h2, h3, h4, h5 {
     max-width: 100%;
     font-family: "Nunito Sans", sans-serif;
     font-optical-sizing: auto;

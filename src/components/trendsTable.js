@@ -3,7 +3,7 @@ import  { html } from "npm:htl";
 import { formatNumber, formatDestination, getTripAdvisorUrl } from "./utils.js";
 import { GREEN, RED, MOBILE_BREAKPOINT } from "./constants.js"
 
-const tableBreakpoint = MOBILE_BREAKPOINT / 3
+const tableBreakpoint = MOBILE_BREAKPOINT / 2
 
 function trendsTable(data, {resize, selTraveler, rangeTop }) {
   const { topDestinationsChange, topDestChangeLong } = data;
