@@ -5,7 +5,7 @@ import { GREEN, RED, MOBILE_BREAKPOINT } from "./constants.js"
 
 const tableBreakpoint = MOBILE_BREAKPOINT / 2
 
-function trendsTable(data, {resize, selTraveler, rangeTop }) {
+function trendsTable(data, {resize, selTraveler }) {
   const { topDestinationsChange, topDestChangeLong } = data;
   function percChangeStyle(perc) {
     if (perc > 0) {
