@@ -293,9 +293,9 @@ function mapPh({width, height}) {
 
 ```js
 // Inputs and checkboxes
-const cbValues = ["2019", "2021", "2023"]
-const checkboxYearsForm = Inputs.checkbox(cbValues, {label: "Filter by year/s", value: cbValues })
-const checkboxYears = view(checkboxYearsForm)
+let cbValues = ["2019", "2021", "2023"]
+let checkboxYearsForm = Inputs.checkbox(cbValues, {label: "Filter by year/s", value: cbValues  })
+let checkboxYears = view(checkboxYearsForm)
 
 // const checkboxesTravelers = view(Inputs.checkbox(["foreign", "overseas", "domestic"], {label: "Select travelers", value: ["foreign"]}))
 const selectRegionForm = Inputs.select([ALL_REGIONS, ...regions], {label: "Select region"})
