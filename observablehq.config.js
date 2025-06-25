@@ -17,9 +17,19 @@ export default {
   // ],
 
   // Content to add to the head of the page, e.g. for a favicon:
+  // Tagging below includes Google Analytics, Search Console and CJ affiliate links.
   head: `
     <link rel="icon" href="observable.png" type="image/png" sizes="32x32">
     <meta name="google-site-verification" content="mSX7K3U9LD78VL9e9x2Fd96z9cBpwfHZd3UUnBP7B7c" />
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-N9CNE0WPRR"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-N9CNE0WPRR');
+    </script>
+    <script src="https://www.anrdoezrs.net/am/101471840/impressions/page/am.js"></script>
   `,
 
   // The path to the source root.
